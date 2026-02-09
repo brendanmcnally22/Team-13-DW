@@ -256,37 +256,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 377129}
   m_CullTransparentMesh: 1
---- !u!1 &309928600
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 309928601}
-  m_Layer: 0
-  m_Name: Spawn Player 5
-  m_TagString: Untagged
-  m_Icon: {fileID: 5721338939258241955, guid: 0000000000000000d000000000000000, type: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &309928601
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 309928600}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -25, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 629426905}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &376650417
 GameObject:
   m_ObjectHideFlags: 0
@@ -461,11 +430,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 486670440}
-  - {fileID: 1533450896}
-  - {fileID: 309928601}
   - {fileID: 1605863624}
-  - {fileID: 1048517544}
-  - {fileID: 2008534069}
   m_Father: {fileID: 892251501}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &656627334
@@ -688,17 +653,9 @@ MonoBehaviour:
   <SpawnPoints>k__BackingField:
   - {fileID: 486670440}
   - {fileID: 1605863624}
-  - {fileID: 1533450896}
-  - {fileID: 1048517544}
-  - {fileID: 309928601}
-  - {fileID: 2008534069}
   <PlayerColors>k__BackingField:
   - {r: 1, g: 0, b: 0, a: 1}
   - {r: 0, g: 0.5054016, b: 1, a: 1}
-  - {r: 1, g: 0.34204102, b: 0, a: 1}
-  - {r: 0.031846523, g: 0, b: 1, a: 1}
-  - {r: 1, g: 0.5668886, b: 0, a: 1}
-  - {r: 0.37434292, g: 0, b: 1, a: 1}
 --- !u!1 &916337142
 GameObject:
   m_ObjectHideFlags: 0
@@ -928,37 +885,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1048517543
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1048517544}
-  m_Layer: 0
-  m_Name: Spawn Player 4
-  m_TagString: Untagged
-  m_Icon: {fileID: 5721338939258241955, guid: 0000000000000000d000000000000000, type: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1048517544
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1048517543}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 30, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 629426905}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1070777153
 GameObject:
@@ -1533,37 +1459,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1313384549}
   m_CullTransparentMesh: 1
---- !u!1 &1533450895
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1533450896}
-  m_Layer: 0
-  m_Name: Spawn Player 3
-  m_TagString: Untagged
-  m_Icon: {fileID: 5721338939258241955, guid: 0000000000000000d000000000000000, type: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1533450896
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1533450895}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -30, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 629426905}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1605863623
 GameObject:
   m_ObjectHideFlags: 0
@@ -2046,37 +1941,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
---- !u!1 &2008534068
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2008534069}
-  m_Layer: 0
-  m_Name: Spawn Player 6
-  m_TagString: Untagged
-  m_Icon: {fileID: 5721338939258241955, guid: 0000000000000000d000000000000000, type: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2008534069
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2008534068}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 35, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 629426905}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2054235359
 GameObject:
   m_ObjectHideFlags: 0
@@ -2343,15 +2207,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5010357515283506443, guid: a49f1eac35feb48418b0cd43ff7a2995, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -35.35
+      value: 10.7
       objectReference: {fileID: 0}
     - target: {fileID: 5010357515283506443, guid: a49f1eac35feb48418b0cd43ff7a2995, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 3.1133165
+      value: 2.2
       objectReference: {fileID: 0}
     - target: {fileID: 5010357515283506443, guid: a49f1eac35feb48418b0cd43ff7a2995, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.82663524
+      value: 6.2
       objectReference: {fileID: 0}
     - target: {fileID: 5010357515283506443, guid: a49f1eac35feb48418b0cd43ff7a2995, type: 3}
       propertyPath: m_LocalRotation.w
