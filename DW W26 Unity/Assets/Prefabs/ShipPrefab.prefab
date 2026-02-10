@@ -74,35 +74,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cfc5a8b73fc79334392f047d730d57bf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxSpeed: 40
-  accel: 50
+  aimTransform: {fileID: 3641968969279354168}
+  maxSpeed: 100
+  acceleration: 70
   brakePower: 35
-  yawTorque: 18
-  yawButtonTorque: 24
-  sideSlipDamping: 9
-  boostAccel: 120
-  boostDuration: 0.25
-  boostCooldown: 1
-  visual: {fileID: 3641968969279354168}
-  visualRoll: 30
-  throttleExponent: 2.6
-  throttleSpoolUpSeconds: 0.8
-  throttleSpoolDownSeconds: 0.35
-  thrusterLights: []
-  thrusterMinIntensity: 0
-  thrusterMaxIntensity: 18
-  thrusterMaxRange: 10
-  thrusterLightSmooth: 12
-  maxRumble: 0.7
-  rumbleSmooth: 10
-  engineLoop: {fileID: 0}
-  engineMinPitch: 0.85
-  engineMaxPitch: 1.7
-  engineMinVol: 0.15
-  engineMaxVol: 0.85
-  engineSmooth: 8
-  steerDeadzone: 0.12
+  lateralDamp: 4.5
+  verticalDamp: 2
+  yawRate: 1.4
+  pitchRate: 1.1
+  rollRate: 1.6
+  turnSpring: 22
+  turnDamp: 8.5
+  maxAngVel: 5
+  inputSmooth: 10
+  stickDeadzone: 0.12
   triggerDeadzone: 0.08
+  lookYawSpeed: 45
+  lookPitchSpeed: 55
+  maxLookYaw: 60
+  minLookPitch: -18
+  maxLookPitch: 28
+  aimReturnSpeed: 4
+  aimSteerStrength: 1
+  aimPitchStrength: 1
+  maxRumble: 0.4
+  rumbleSmooth: 15
 --- !u!114 &1347986384396866640
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -241,7 +237,7 @@ Transform:
   m_GameObject: {fileID: 1026282735073705928}
   serializedVersion: 2
   m_LocalRotation: {x: 0.046808444, y: -0, z: -0, w: 0.99890393}
-  m_LocalPosition: {x: -0.5, y: 13, z: -30}
+  m_LocalPosition: {x: 1744, y: -2, z: 127}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -279,7 +275,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 200
+  far clip plane: 2000
   field of view: 60.000004
   orthographic: 0
   orthographic size: 10.8
@@ -355,13 +351,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 3641968969279354168}
+  aim: {fileID: 0}
   distance: 15
-  height: 5
-  lookSpeed: 140
-  maxYawOffset: 70
-  minPitch: -15
-  maxPitch: 35
-  followSmooth: 10
+  height: 6
+  posSmoothTime: 0.15
+  rotSharpness: 10
+  lookAtOffset: {x: 0, y: 1, z: 0}
 --- !u!1001 &3819164660877841107
 PrefabInstance:
   m_ObjectHideFlags: 0
