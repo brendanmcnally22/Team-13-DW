@@ -288,4 +288,12 @@ public class ShipControllerFlight : MonoBehaviour
         if (pad != null)
             pad.SetMotorSpeeds(0f, 0f);
     }
+    public void RecenterAim()
+    {
+        lookYaw = 0f;
+        lookPitch = 0f;
+        if (aimTransform != null)
+            aimTransform.localRotation = Quaternion.identity;
+    }
+
 }
