@@ -1,16 +1,16 @@
 fileFormatVersion: 2
-guid: d0c903273e2ab7041bcd8a5fb3ef06e7
+guid: c3db0ff00916f0b49b5807afce937317
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -3956554993533489234
-    second: 2k_earth_normal_map_0
+      213: -8590410813917515506
+    second: 2k_venus_surface_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
     mipMapMode: 0
     enableMipMap: 1
-    sRGBTexture: 0
+    sRGBTexture: 1
     linearTexture: 0
     fadeOut: 0
     borderMipMap: 0
@@ -57,7 +57,7 @@ TextureImporter:
   alphaUsage: 1
   alphaIsTransparency: 0
   spriteTessellationDetail: -1
-  textureType: 1
+  textureType: 0
   textureShape: 1
   singleChannelComponent: 0
   flipbookRows: 1
@@ -75,7 +75,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -113,7 +113,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: 2k_earth_normal_map_0
+      name: 2k_venus_surface_0
       rect:
         serializedVersion: 2
         x: 0
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: eaf6324323e7719c0800000000000000
-      internalID: -3956554993533489234
+      spriteID: e01b5c1f0eab8c880800000000000000
+      internalID: -8590410813917515506
       vertices: []
       indices: 
       edges: []
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      2k_earth_normal_map_0: -3956554993533489234
+      2k_venus_surface_0: -8590410813917515506
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

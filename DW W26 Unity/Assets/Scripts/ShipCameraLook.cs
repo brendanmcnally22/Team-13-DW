@@ -1,49 +1,42 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
-public class ShipCameraLook : MonoBehaviour
+public class ShipCameraFollow : MonoBehaviour
 {
-    [SerializeField] Transform target;
-    [SerializeField] float distance = 8f;
-    [SerializeField] float height = 3f;
-    [SerializeField] float lookSpeed = 140f;
+    [Header("Targets")]
+    [SerializeField] Transform target;        // ship
+    [SerializeField] Transform aim;           // ship/AimPivot (recommended)
 
-    PlayerInput pi;
-    InputAction lookAction;
+    [Header("Follow")]
+    [SerializeField] float distance = 12f;
+    [SerializeField] float height = 4f;
 
-    float yaw;
-    float pitch;
+    [Header("Smoothing")]
+    [SerializeField] float posSmoothTime = 0.15f;
+    [SerializeField] float rotSharpness = 10f;
 
-    void Awake()
-    {
-        pi = GetComponentInParent<PlayerInput>();
-    }
+    [Header("Look At")]
+    [SerializeField] Vector3 lookAtOffset = new Vector3(0f, 1.0f, 0f); // look slightly above ship
 
-    void OnEnable()
-    {
-        if (pi != null && pi.actions != null)
-            lookAction = pi.actions.FindAction("Player/Look");
-    }
+    Vector3 posVel;
 
     void LateUpdate()
     {
-        if (target == null || lookAction == null) return;
+        if (target == null) return;
 
-        Vector2 look = lookAction.ReadValue<Vector2>();
+        // follow behind where you're aiming (if aim exists), otherwise behind the ship
+        Transform dirSource = (aim != null) ? aim : target;
 
-        yaw += look.x * lookSpeed * Time.deltaTime;
-        pitch -= look.y * lookSpeed * Time.deltaTime;
-        pitch = Mathf.Clamp(pitch, -25f, 45f);
+        Vector3 desiredPos = target.position - dirSource.forward * distance + Vector3.up * height;
+        transform.position = Vector3.SmoothDamp(transform.position, desiredPos, ref posVel, posSmoothTime);
 
-        Quaternion rot = Quaternion.Euler(pitch, yaw, 0f);
+        Vector3 lookTarget = target.position + target.TransformDirection(lookAtOffset);
+        Quaternion desiredRot = Quaternion.LookRotation(lookTarget - transform.position, Vector3.up);
 
-        Vector3 pos = target.position - rot * Vector3.forward * distance + Vector3.up * height;
-        transform.position = pos;
-        transform.LookAt(target.position + Vector3.up * 1.2f);
+        // nicer smoothing than raw slerp * dt
+        float t = 1f - Mathf.Exp(-rotSharpness * Time.deltaTime);
+        transform.rotation = Quaternion.Slerp(transform.rotation, desiredRot, t);
     }
 
-    public void SetTarget(Transform t)
-    {
-        target = t;
-    }
+    public void SetTarget(Transform t) => target = t;
+    public void SetAim(Transform a) => aim = a;
 }

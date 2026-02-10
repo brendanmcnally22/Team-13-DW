@@ -3,44 +3,75 @@ using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(PlayerInput))]
-public class ShipController : MonoBehaviour
+public class ShipControllerFlight : MonoBehaviour
 {
-    [SerializeField] float maxSpeed = 40f;
-    [SerializeField] float accel = 50f;
-    [SerializeField] float brakePower = 35f;
+    [Header("Aim (DO NOT set this to the camera)")]
+    [SerializeField] Transform aimTransform; // ship/AimPivot (auto-created if missing)
 
-    [SerializeField] float yawTorque = 18f;
-    [SerializeField] float yawButtonTorque = 24f;
+    [Header("Speed")]
+    [SerializeField] float maxSpeed = 55f;
+    [SerializeField] float acceleration = 35f;
+    [SerializeField] float brakePower = 4f;
 
-    [SerializeField] float linearDamping = 1.4f;
-    [SerializeField] float angularDamping = 4f;
-    [SerializeField] float sideSlipDamping = 9f;
+    [Header("Arcade Drift Kill (the fun sliders)")]
+    [SerializeField] float lateralDamp = 4.5f;   // higher = less side-slip
+    [SerializeField] float verticalDamp = 2.0f;  // higher = less up/down drift
 
-    [SerializeField] float boostForce = 100f;
-    [SerializeField] float boostDuration = 0.25f;
-    [SerializeField] float boostCooldown = 1f;
+    [Header("Turn Rates")]
+    [SerializeField] float yawRate = 1.4f;       // left stick X
+    [SerializeField] float pitchRate = 1.1f;     // from aimTransform
+    [SerializeField] float rollRate = 1.6f;      // L1/R1
 
-    [SerializeField] Transform visual;
-    [SerializeField] float visualRoll = 30f;
+    [Header("Turn Spring (tightness)")]
+    [SerializeField] float turnSpring = 22f;
+    [SerializeField] float turnDamp = 8.5f;
+    [SerializeField] float maxAngVel = 5.0f;
+
+    [Header("Input")]
+    [SerializeField] float inputSmooth = 10f;
+    [SerializeField] float stickDeadzone = 0.12f;
+    [SerializeField] float triggerDeadzone = 0.08f;
+
+    [Header("Right Stick Look (aim pivot)")]
+    [SerializeField] float lookYawSpeed = 70f;
+    [SerializeField] float lookPitchSpeed = 55f;
+    [SerializeField] float maxLookYaw = 60f;
+    [SerializeField] float minLookPitch = -18f;
+    [SerializeField] float maxLookPitch = 28f;
+    [SerializeField] float aimReturnSpeed = 4.0f; // returns aim to center when you stop touching stick
+
+    [Header("Aim Steers Ship")]
+    [SerializeField] float aimSteerStrength = 1.0f; // how much right stick helps yaw
+    [SerializeField] float aimPitchStrength = 1.0f; // how much right stick helps pitch
+
+    [Header("Rumble (PS5 controller)")]
+    [SerializeField] float maxRumble = 0.6f;
+    [SerializeField] float rumbleSmooth = 10f;
 
     Rigidbody rb;
     PlayerInput pi;
+    Gamepad pad;
 
     InputAction moveAction;       // left stick
-    InputAction lookAction;       // right stick (camera script uses this, not the ship)
+    InputAction lookAction;       // right stick
     InputAction throttleAction;   // R2
     InputAction brakeAction;      // L2
-    InputAction boostAction;      // X
-    InputAction yawLeftAction;    // L1
-    InputAction yawRightAction;   // R1
+    InputAction rollLAction;      // L1
+    InputAction rollRAction;      // R1
 
     float throttle;
     float brake;
-    float steer;
 
-    bool boostQueued;
-    float boostTimer;
-    float boostCd;
+    float yawIn;
+    float rollIn;
+
+    float yawSm;
+    float rollSm;
+
+    float rumbleCurrent;
+
+    float lookYaw;
+    float lookPitch;
 
     void Awake()
     {
@@ -48,8 +79,27 @@ public class ShipController : MonoBehaviour
         pi = GetComponent<PlayerInput>();
 
         rb.useGravity = false;
+
+#if UNITY_6000_0_OR_NEWER
+        rb.linearDamping = 0.6f;
+        rb.angularDamping = 0f;
+#else
+        rb.drag = 0.6f;
+        rb.angularDrag = 0f;
+#endif
+
         rb.interpolation = RigidbodyInterpolation.Interpolate;
-        rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+        rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+
+        // Make an AimPivot if you didn't assign one (this is the safe setup)
+        if (aimTransform == null)
+        {
+            GameObject go = new GameObject("AimPivot");
+            go.transform.SetParent(transform);
+            go.transform.localPosition = Vector3.zero;
+            go.transform.localRotation = Quaternion.identity;
+            aimTransform = go.transform;
+        }
     }
 
     void OnEnable()
@@ -57,110 +107,185 @@ public class ShipController : MonoBehaviour
         if (pi != null && pi.actions != null)
             pi.actions.Enable();
 
-        moveAction = pi.actions.FindAction("Player/Move");
-        lookAction = pi.actions.FindAction("Player/Look");
+        // Your names first (since you said inputs are set up),
+        // but we add fallbacks so it doesn't silently break if maps differ.
+        moveAction = FindAction("Player/Move", "Move");
+        lookAction = FindAction("Player/Look", "Look");
+        throttleAction = FindAction("Player/Throttle", "Throttle");
+        brakeAction = FindAction("Player/Crouch", "Player/Brake", "Brake");   // you had crouch as brake
+        rollLAction = FindAction("Player/Previous", "RollLeft", "Previous");
+        rollRAction = FindAction("Player/Next", "RollRight", "Next");
 
-        throttleAction = pi.actions.FindAction("Player/Throttle");
-        brakeAction = pi.actions.FindAction("Player/Brake");
+        pad = null;
+        foreach (var d in pi.devices)
+            if (d is Gamepad g) { pad = g; break; }
 
-        boostAction = pi.actions.FindAction("Player/Boost");
+        if (pad == null) pad = Gamepad.current; // PS5 DualSense shows up as a Gamepad
+    }
 
-        yawLeftAction = pi.actions.FindAction("Player/YawLeft");
-        yawRightAction = pi.actions.FindAction("Player/YawRight");
+    InputAction FindAction(params string[] names)
+    {
+        if (pi == null || pi.actions == null) return null;
 
-        Debug.Log($"{name} input enabled. move={(moveAction != null)} look={(lookAction != null)} throttle={(throttleAction != null)} brake={(brakeAction != null)} boost={(boostAction != null)}");
+        for (int i = 0; i < names.Length; i++)
+        {
+            var a = pi.actions.FindAction(names[i], false);
+            if (a != null) return a;
+        }
+        return null;
     }
 
     void Update()
     {
-        // left stick steering only
+        // ----- Left stick yaw -----
+        yawIn = 0f;
         if (moveAction != null)
-            steer = moveAction.ReadValue<Vector2>().x;
+            yawIn = moveAction.ReadValue<Vector2>().x;
 
-        // triggers are analog 0..1
-        if (throttleAction != null)
-            throttle = Mathf.Clamp01(throttleAction.ReadValue<float>());
+        if (Mathf.Abs(yawIn) < stickDeadzone) yawIn = 0f;
 
-        if (brakeAction != null)
-            brake = Mathf.Clamp01(brakeAction.ReadValue<float>());
+        // ----- Roll (L1/R1) -----
+        rollIn = 0f;
+        if (rollLAction != null && rollLAction.IsPressed()) rollIn -= 1f;
+        if (rollRAction != null && rollRAction.IsPressed()) rollIn += 1f;
 
-        // boost on X
-        if (boostAction != null && boostAction.WasPressedThisFrame())
-            boostQueued = true;
+        // ----- Triggers -----
+        throttle = (throttleAction != null) ? Mathf.Clamp01(throttleAction.ReadValue<float>()) : 0f;
+        brake = (brakeAction != null) ? Mathf.Clamp01(brakeAction.ReadValue<float>()) : 0f;
+
+        if (throttle < triggerDeadzone) throttle = 0f;
+        if (brake < triggerDeadzone) brake = 0f;
+
+        // Smooth inputs (keeps it buttery)
+        yawSm = Mathf.Lerp(yawSm, yawIn, inputSmooth * Time.deltaTime);
+        rollSm = Mathf.Lerp(rollSm, rollIn, inputSmooth * Time.deltaTime);
+
+        UpdateAimFromRightStick();
+        UpdateRumble();
+    }
+
+    void UpdateAimFromRightStick()
+    {
+        if (aimTransform == null) return;
+
+        Vector2 look = Vector2.zero;
+        if (lookAction != null)
+            look = lookAction.ReadValue<Vector2>();
+
+        if (Mathf.Abs(look.x) < stickDeadzone) look.x = 0f;
+        if (Mathf.Abs(look.y) < stickDeadzone) look.y = 0f;
+
+        bool hasLook = look.sqrMagnitude > 0.0001f;
+
+        if (hasLook)
+        {
+            lookYaw += look.x * lookYawSpeed * Time.deltaTime;
+            lookPitch -= look.y * lookPitchSpeed * Time.deltaTime;
+        }
+        else
+        {
+            // let go of stick? gently recenter so you’re not permanently crab-walking your aim
+            lookYaw = Mathf.Lerp(lookYaw, 0f, aimReturnSpeed * Time.deltaTime);
+            lookPitch = Mathf.Lerp(lookPitch, 0f, aimReturnSpeed * Time.deltaTime);
+        }
+
+        lookYaw = Mathf.Clamp(lookYaw, -maxLookYaw, maxLookYaw);
+        lookPitch = Mathf.Clamp(lookPitch, minLookPitch, maxLookPitch);
+
+        // local rotation so it stays “relative to ship”
+        aimTransform.localRotation = Quaternion.Euler(lookPitch, lookYaw, 0f);
     }
 
     void FixedUpdate()
     {
-        if (moveAction == null || throttleAction == null || brakeAction == null)
-            return;
+        // Brake = more damping
+#if UNITY_6000_0_OR_NEWER
+        rb.linearDamping = 0.6f + brake * brakePower;
+#else
+        rb.drag = 0.6f + brake * brakePower;
+#endif
 
-        // accelerate forward (R2)
+        // Thrust forward
         if (throttle > 0.01f)
-            rb.AddForce(transform.forward * (throttle * accel), ForceMode.Acceleration);
+            rb.AddForce(transform.forward * throttle * acceleration, ForceMode.Acceleration);
 
-        // brake / reverse (L2)
-        if (brake > 0.01f)
-            rb.AddForce(-transform.forward * (brake * brakePower), ForceMode.Acceleration);
+        // Kill sideways/vertical drift so it feels responsive
+#if UNITY_6000_0_OR_NEWER
+        Vector3 worldVel = rb.linearVelocity;
+#else
+        Vector3 worldVel = rb.velocity;
+#endif
+        Vector3 localVel = transform.InverseTransformDirection(worldVel);
 
-        // yaw from left stick steer + L1/R1 buttons
-        float totalYaw = steer * yawTorque;
+        localVel.x = Mathf.Lerp(localVel.x, 0f, lateralDamp * Time.fixedDeltaTime);
+        localVel.y = Mathf.Lerp(localVel.y, 0f, verticalDamp * Time.fixedDeltaTime);
 
-        if (yawLeftAction != null && yawLeftAction.IsPressed())
-            totalYaw -= yawButtonTorque;
+        worldVel = transform.TransformDirection(localVel);
 
-        if (yawRightAction != null && yawRightAction.IsPressed())
-            totalYaw += yawButtonTorque;
+        // Clamp speed
+        if (worldVel.magnitude > maxSpeed)
+            worldVel = worldVel.normalized * maxSpeed;
 
-        rb.AddTorque(Vector3.up * totalYaw, ForceMode.Acceleration);
+#if UNITY_6000_0_OR_NEWER
+        rb.linearVelocity = worldVel;
+#else
+        rb.velocity = worldVel;
+#endif
 
-        // keep it grippy (kills sideways drift)
-        Vector3 localVel = transform.InverseTransformDirection(rb.linearVelocity);
-        localVel.x = Mathf.Lerp(localVel.x, 0f, sideSlipDamping * Time.fixedDeltaTime);
-        rb.linearVelocity = transform.TransformDirection(localVel);
+        // ----- Turning -----
+        Vector3 targetLocalAngVel = Vector3.zero;
 
-        // fake damping so it feels like a racer not a float sim
-        rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, Vector3.zero, linearDamping * Time.fixedDeltaTime);
-        rb.angularVelocity = Vector3.Lerp(rb.angularVelocity, Vector3.zero, angularDamping * Time.fixedDeltaTime);
+        // Left stick yaw is primary steering
+        targetLocalAngVel.y += yawSm * yawRate;
 
-        // speed cap
-        if (rb.linearVelocity.magnitude > maxSpeed)
-            rb.linearVelocity = rb.linearVelocity.normalized * maxSpeed;
-
-        HandleBoost();
-
-        // tilt mesh for style only
-        if (visual != null)
+        // Right stick aim also steers (toward AimPivot forward)
+        if (aimTransform != null)
         {
-            float targetRoll = -steer * visualRoll;
-            visual.localRotation = Quaternion.Slerp(
-                visual.localRotation,
-                Quaternion.Euler(0f, 0f, targetRoll),
-                12f * Time.fixedDeltaTime
-            );
+            Vector3 desiredLocal = transform.InverseTransformDirection(aimTransform.forward);
+
+            float aimYaw = Mathf.Clamp(desiredLocal.x, -1f, 1f) * yawRate * aimSteerStrength;
+            float aimPitch = Mathf.Clamp(desiredLocal.y, -1f, 1f) * pitchRate * aimPitchStrength;
+
+            targetLocalAngVel.y += aimYaw;
+            targetLocalAngVel.x += -aimPitch;
         }
+
+        // Roll
+        targetLocalAngVel.z += rollSm * rollRate;
+
+        Vector3 currentLocalAngVel = transform.InverseTransformDirection(rb.angularVelocity);
+        Vector3 error = targetLocalAngVel - currentLocalAngVel;
+
+        // Spring-damper: the ship *wants* to match target ang vel
+        Vector3 localTorque = (error * turnSpring) - (currentLocalAngVel * turnDamp);
+        Vector3 worldTorque = transform.TransformDirection(localTorque);
+
+        rb.AddTorque(worldTorque, ForceMode.Acceleration);
+
+        // Clamp max spin
+        if (rb.angularVelocity.magnitude > maxAngVel)
+            rb.angularVelocity = rb.angularVelocity.normalized * maxAngVel;
     }
 
-    void HandleBoost()
+    void UpdateRumble()
     {
-        if (boostCd > 0f)
-            boostCd -= Time.fixedDeltaTime;
+        if (pad == null) return;
 
-        if (boostTimer > 0f)
+        float target = (throttle > 0.05f) ? throttle * maxRumble : 0f;
+        rumbleCurrent = Mathf.Lerp(rumbleCurrent, target, rumbleSmooth * Time.deltaTime);
+
+        if (rumbleCurrent < 0.01f)
         {
-            boostTimer -= Time.fixedDeltaTime;
-            rb.AddForce(transform.forward * boostForce, ForceMode.Acceleration);
+            pad.SetMotorSpeeds(0f, 0f);
             return;
         }
 
-        if (boostQueued)
-        {
-            boostQueued = false;
+        pad.SetMotorSpeeds(rumbleCurrent * 0.7f, rumbleCurrent);
+    }
 
-            if (boostCd <= 0f)
-            {
-                boostTimer = boostDuration;
-                boostCd = boostCooldown;
-            }
-        }
+    void OnDisable()
+    {
+        if (pad != null)
+            pad.SetMotorSpeeds(0f, 0f);
     }
 }
