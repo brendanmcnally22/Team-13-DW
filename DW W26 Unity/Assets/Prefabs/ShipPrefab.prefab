@@ -75,8 +75,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   aimTransform: {fileID: 3641968969279354168}
-  maxSpeed: 40
-  acceleration: 35
+  maxSpeed: 100
+  acceleration: 70
   brakePower: 35
   lateralDamp: 4.5
   verticalDamp: 2
@@ -353,7 +353,7 @@ MonoBehaviour:
   target: {fileID: 3641968969279354168}
   aim: {fileID: 0}
   distance: 15
-  height: 5
+  height: 6
   posSmoothTime: 0.15
   rotSharpness: 10
   lookAtOffset: {x: 0, y: 1, z: 0}
