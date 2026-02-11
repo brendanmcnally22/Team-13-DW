@@ -7,11 +7,12 @@ TagManager:
   - TrackingObject
   - Actors
   - Timer
+  - Asteroid
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Ship
   - Water
   - UI
   - 
