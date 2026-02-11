@@ -1,9 +1,10 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-
+using UnityEngine.InputSystem;
 public class MenuControls : MonoBehaviour
 {
     public float selection;
+    bool buttonDown;
     [Space(10)]
     [Header("Start")]
     public GameObject StartSprite;
@@ -20,13 +21,19 @@ public class MenuControls : MonoBehaviour
     void Start()
     {
         selection = 1;
+        
     }
 
     // Update is called once per frame
     void Update()
     {
+        float verticalInput = Input.GetAxis("Vertical");
+        if (verticalInput == 0)
+        {
+            buttonDown = false;
+        }
         // Go down
-        if (Input.GetKeyDown(KeyCode.DownArrow))
+        if (verticalInput < 0 && buttonDown == false)
         {
             if (selection <= 3)
             {
@@ -37,9 +44,10 @@ public class MenuControls : MonoBehaviour
             {
                 selection = 1;
             }
+            buttonDown = true;
         }
         // Go up
-        if (Input.GetKeyDown(KeyCode.UpArrow))
+        if (verticalInput > 0 && buttonDown == false)
         {
             if (selection >= 1)
             {
@@ -50,6 +58,7 @@ public class MenuControls : MonoBehaviour
             {
                 selection = 3;
             }
+            buttonDown = true;
         }
         // Start is Selected
         if (selection == 1)
