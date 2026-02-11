@@ -113,6 +113,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Reorient",
+                    "type": "Button",
+                    "id": "7574884e-48eb-46e2-80ec-8a88e234a5a9",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -553,6 +562,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "DashRight",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "00ea38e8-1490-4e23-b17c-0105d2b5ec68",
+                    "path": "<DualSenseGamepadHID>/touchpadButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Reorient",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

@@ -6,7 +6,7 @@ public class ShipReorient : MonoBehaviour
 {
     PlayerInput pi;
     ShipControllerFlight flight;
-    Gamepad pad;
+    InputAction reorient;
 
     void Awake()
     {
@@ -16,17 +16,15 @@ public class ShipReorient : MonoBehaviour
 
     void OnEnable()
     {
-        pad = null;
-        foreach (var d in pi.devices)
-            if (d is Gamepad g) { pad = g; break; }
+        reorient = pi.actions.FindAction("Reorient", false);
+        if (reorient == null)
+            Debug.LogWarning($"{name}: No 'Reorient' action found. Add it in Input Actions.");
     }
 
     void Update()
     {
-        if (flight == null || pad == null) return;
-
-        // PS5 touchpad click often maps to selectButton. If it doesn’t, bind it in Input Actions.
-        if (pad.selectButton.wasPressedThisFrame)
+        if (flight == null || reorient == null) return;
+        if (reorient.WasPressedThisFrame())
             flight.RecenterAim();
     }
 }

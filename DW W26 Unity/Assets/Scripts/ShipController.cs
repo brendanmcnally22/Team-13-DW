@@ -13,6 +13,9 @@ public class ShipControllerFlight : MonoBehaviour
     [SerializeField] float acceleration = 35f;
     [SerializeField] float brakePower = 4f;
 
+    [Header("Brake Hard Stop (extra)")]
+    [SerializeField] float hardStopStrength = 10f; // set 0 to disable
+
     [Header("Arcade Drift Kill (the fun sliders)")]
     [SerializeField] float lateralDamp = 4.5f;   // higher = less side-slip
     [SerializeField] float verticalDamp = 2.0f;  // higher = less up/down drift
@@ -46,7 +49,12 @@ public class ShipControllerFlight : MonoBehaviour
 
     [Header("Rumble (PS5 controller)")]
     [SerializeField] float maxRumble = 0.6f;
+    [SerializeField] float brakeRumble = 0.75f;       // NEW
     [SerializeField] float rumbleSmooth = 10f;
+
+    [Header("Rumble Burst")]
+    [SerializeField] float throttleBurst = 0.9f;      // NEW
+    [SerializeField] float burstDuration = 0.12f;     // NEW
 
     Rigidbody rb;
     PlayerInput pi;
@@ -72,6 +80,14 @@ public class ShipControllerFlight : MonoBehaviour
 
     float lookYaw;
     float lookPitch;
+
+    float prevThrottle;
+    float burstTimer;
+
+    // Exposed for HUD
+    public float Throttle01 => throttle;
+    public float Brake01 => brake;
+    public float MaxSpeed => maxSpeed;
 
     void Awake()
     {
@@ -107,20 +123,20 @@ public class ShipControllerFlight : MonoBehaviour
         if (pi != null && pi.actions != null)
             pi.actions.Enable();
 
-        // Your names first (since you said inputs are set up),
-        // but we add fallbacks so it doesn't silently break if maps differ.
         moveAction = FindAction("Player/Move", "Move");
         lookAction = FindAction("Player/Look", "Look");
         throttleAction = FindAction("Player/Throttle", "Throttle");
-        brakeAction = FindAction("Player/Crouch", "Player/Brake", "Brake");   // you had crouch as brake
+        brakeAction = FindAction("Player/Crouch", "Player/Brake", "Brake");   // crouch = brake
         rollLAction = FindAction("Player/Previous", "RollLeft", "Previous");
         rollRAction = FindAction("Player/Next", "RollRight", "Next");
 
+        // grab the gamepad paired to THIS PlayerInput
         pad = null;
         foreach (var d in pi.devices)
             if (d is Gamepad g) { pad = g; break; }
 
-        if (pad == null) pad = Gamepad.current; // PS5 DualSense shows up as a Gamepad
+        if (pad == null)
+            Debug.LogWarning($"{name}: No gamepad paired to this PlayerInput. Rumble disabled.");
     }
 
     InputAction FindAction(params string[] names)
@@ -156,6 +172,12 @@ public class ShipControllerFlight : MonoBehaviour
         if (throttle < triggerDeadzone) throttle = 0f;
         if (brake < triggerDeadzone) brake = 0f;
 
+        // throttle press -> short burst
+        if (throttle > 0.05f && prevThrottle <= 0.05f)
+            burstTimer = burstDuration;
+
+        prevThrottle = throttle;
+
         // Smooth inputs (keeps it buttery)
         yawSm = Mathf.Lerp(yawSm, yawIn, inputSmooth * Time.deltaTime);
         rollSm = Mathf.Lerp(rollSm, rollIn, inputSmooth * Time.deltaTime);
@@ -184,7 +206,6 @@ public class ShipControllerFlight : MonoBehaviour
         }
         else
         {
-            // let go of stick? gently recenter so you’re not permanently crab-walking your aim
             lookYaw = Mathf.Lerp(lookYaw, 0f, aimReturnSpeed * Time.deltaTime);
             lookPitch = Mathf.Lerp(lookPitch, 0f, aimReturnSpeed * Time.deltaTime);
         }
@@ -192,13 +213,12 @@ public class ShipControllerFlight : MonoBehaviour
         lookYaw = Mathf.Clamp(lookYaw, -maxLookYaw, maxLookYaw);
         lookPitch = Mathf.Clamp(lookPitch, minLookPitch, maxLookPitch);
 
-        // local rotation so it stays “relative to ship”
         aimTransform.localRotation = Quaternion.Euler(lookPitch, lookYaw, 0f);
     }
 
     void FixedUpdate()
     {
-        // Brake = more damping
+        // Brake = more damping (your original behavior)
 #if UNITY_6000_0_OR_NEWER
         rb.linearDamping = 0.6f + brake * brakePower;
 #else
@@ -209,12 +229,18 @@ public class ShipControllerFlight : MonoBehaviour
         if (throttle > 0.01f)
             rb.AddForce(transform.forward * throttle * acceleration, ForceMode.Acceleration);
 
-        // Kill sideways/vertical drift so it feels responsive
+        // Get velocity
 #if UNITY_6000_0_OR_NEWER
         Vector3 worldVel = rb.linearVelocity;
 #else
         Vector3 worldVel = rb.velocity;
 #endif
+
+        // Hard brake stop (extra)
+        if (brake > 0.01f && hardStopStrength > 0.01f)
+            worldVel = Vector3.Lerp(worldVel, Vector3.zero, brake * hardStopStrength * Time.fixedDeltaTime);
+
+        // Kill sideways/vertical drift so it feels responsive
         Vector3 localVel = transform.InverseTransformDirection(worldVel);
 
         localVel.x = Mathf.Lerp(localVel.x, 0f, lateralDamp * Time.fixedDeltaTime);
@@ -235,10 +261,8 @@ public class ShipControllerFlight : MonoBehaviour
         // ----- Turning -----
         Vector3 targetLocalAngVel = Vector3.zero;
 
-        // Left stick yaw is primary steering
         targetLocalAngVel.y += yawSm * yawRate;
 
-        // Right stick aim also steers (toward AimPivot forward)
         if (aimTransform != null)
         {
             Vector3 desiredLocal = transform.InverseTransformDirection(aimTransform.forward);
@@ -250,19 +274,16 @@ public class ShipControllerFlight : MonoBehaviour
             targetLocalAngVel.x += -aimPitch;
         }
 
-        // Roll
         targetLocalAngVel.z += rollSm * rollRate;
 
         Vector3 currentLocalAngVel = transform.InverseTransformDirection(rb.angularVelocity);
         Vector3 error = targetLocalAngVel - currentLocalAngVel;
 
-        // Spring-damper: the ship *wants* to match target ang vel
         Vector3 localTorque = (error * turnSpring) - (currentLocalAngVel * turnDamp);
         Vector3 worldTorque = transform.TransformDirection(localTorque);
 
         rb.AddTorque(worldTorque, ForceMode.Acceleration);
 
-        // Clamp max spin
         if (rb.angularVelocity.magnitude > maxAngVel)
             rb.angularVelocity = rb.angularVelocity.normalized * maxAngVel;
     }
@@ -271,7 +292,18 @@ public class ShipControllerFlight : MonoBehaviour
     {
         if (pad == null) return;
 
-        float target = (throttle > 0.05f) ? throttle * maxRumble : 0f;
+        // base rumble from throttle OR brake
+        float baseRumble = Mathf.Max(throttle * maxRumble, brake * brakeRumble);
+
+        // burst rumble when throttle starts
+        float burst = 0f;
+        if (burstTimer > 0f)
+        {
+            burst = throttleBurst;
+            burstTimer -= Time.deltaTime;
+        }
+
+        float target = Mathf.Clamp01(Mathf.Max(baseRumble, burst));
         rumbleCurrent = Mathf.Lerp(rumbleCurrent, target, rumbleSmooth * Time.deltaTime);
 
         if (rumbleCurrent < 0.01f)
@@ -288,6 +320,7 @@ public class ShipControllerFlight : MonoBehaviour
         if (pad != null)
             pad.SetMotorSpeeds(0f, 0f);
     }
+
     public void RecenterAim()
     {
         lookYaw = 0f;
@@ -295,5 +328,4 @@ public class ShipControllerFlight : MonoBehaviour
         if (aimTransform != null)
             aimTransform.localRotation = Quaternion.identity;
     }
-
 }

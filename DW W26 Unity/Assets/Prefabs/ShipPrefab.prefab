@@ -13,9 +13,13 @@ GameObject:
   - component: {fileID: 209285461287175124}
   - component: {fileID: 1347986384396866640}
   - component: {fileID: 2708562649026150741}
-  m_Layer: 0
+  - component: {fileID: 1499590251449030136}
+  - component: {fileID: 4662495879733800091}
+  - component: {fileID: 6777314587793881177}
+  - component: {fileID: 7214294916636882648}
+  m_Layer: 3
   m_Name: ShipPrefab
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -52,7 +56,7 @@ Rigidbody:
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
   m_IncludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 4294967295
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -62,7 +66,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
 --- !u!114 &209285461287175124
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -76,9 +80,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   aimTransform: {fileID: 3641968969279354168}
-  maxSpeed: 100
-  acceleration: 70
+  maxSpeed: 150
+  acceleration: 95
   brakePower: 35
+  hardStopStrength: 10
   lateralDamp: 4.5
   verticalDamp: 2
   yawRate: 1.4
@@ -99,7 +104,10 @@ MonoBehaviour:
   aimSteerStrength: 1
   aimPitchStrength: 1
   maxRumble: 0.4
+  brakeRumble: 0.75
   rumbleSmooth: 15
+  throttleBurst: 0.9
+  burstDuration: 0.12
 --- !u!114 &1347986384396866640
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -205,6 +213,18 @@ MonoBehaviour:
       m_Calls: []
     m_ActionId: 9caa3d8a-6b2f-4e8e-8bad-6ede561bd9be
     m_ActionName: UI/TrackedDeviceOrientation
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 3927ee6f-18ff-434b-9bf5-acab092f9709
+    m_ActionName: 'Player/DashLeft[/DualSenseGamepadHID/dpad/left]'
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 434c9023-48bd-4b17-8b5e-d5eccb883d64
+    m_ActionName: 'Player/DashRight[/DualSenseGamepadHID/dpad/right]'
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 7574884e-48eb-46e2-80ec-8a88e234a5a9
+    m_ActionName: 'Player/Reorient[/DualSenseGamepadHID/touchpadButton]'
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: Gamepad
   m_DefaultActionMap: Player
@@ -225,14 +245,67 @@ CapsuleCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.5
-  m_Height: 1
-  m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Radius: 3.5527506
+  m_Height: 18.236328
+  m_Direction: 2
+  m_Center: {x: 0.6397543, y: 1.1731415, z: 2.1240234}
+--- !u!114 &1499590251449030136
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 221812434454255184}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 39e7a3e74b17a1f4dba520559101f730, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dashImpulse: 105
+  dashCooldown: 2
+  dashLockTime: 0.5
+--- !u!114 &4662495879733800091
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 221812434454255184}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1ee8dc709de4db43aec217072b6dacc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &6777314587793881177
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 221812434454255184}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 968449e61cd7e9d48b48c451919470df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  velocityMulOnHit: 0.8
+  minTimeBetweenHits: 0.15
+--- !u!114 &7214294916636882648
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 221812434454255184}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d0ac31cb40c9dd4bb5448c3d2dc4bef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &3819164660877841107
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -281,9 +354,25 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -6257754144140475893, guid: 4b55f125fbc47154e90ecf4531014132, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: -4619342603592232540, guid: 4b55f125fbc47154e90ecf4531014132, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: -1462371289458378623, guid: 4b55f125fbc47154e90ecf4531014132, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 4b55f125fbc47154e90ecf4531014132, type: 3}
       propertyPath: m_Name
       value: ship
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 4b55f125fbc47154e90ecf4531014132, type: 3}
+      propertyPath: m_Layer
+      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

@@ -1,47 +1,28 @@
-using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
-public class ShipAsteroidSlow : MonoBehaviour
+public class ParticleAsteroidSlow : MonoBehaviour
 {
-    [SerializeField] float speedMultiplierOnHit = 0.55f; // 55% speed
-    [SerializeField] float stunTime = 0.35f;             // short “ow” moment
+    [SerializeField] float velocityMulOnHit = 0.80f;
+    [SerializeField] float minTimeBetweenHits = 0.15f;
 
     Rigidbody rb;
-    ShipControllerFlight flight;
-    bool stunned;
+    float nextTime;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        flight = GetComponent<ShipControllerFlight>();
     }
 
-    void OnCollisionEnter(Collision col)
+    void OnParticleCollision(GameObject other)
     {
-        if (stunned) return;
-        if (!col.collider.CompareTag("Asteroid")) return;
+        if (Time.time < nextTime) return;
+        nextTime = Time.time + minTimeBetweenHits;
 
-        StartCoroutine(SlowRoutine());
-    }
-
-    IEnumerator SlowRoutine()
-    {
-        stunned = true;
-
-        // cut speed immediately
 #if UNITY_6000_0_OR_NEWER
-        rb.linearVelocity *= speedMultiplierOnHit;
+        rb.linearVelocity *= velocityMulOnHit;
 #else
-        rb.velocity *= speedMultiplierOnHit;
+        rb.velocity *= velocityMulOnHit;
 #endif
-
-        // optional: disable flight briefly to really “feel” the penalty
-        if (flight != null) flight.enabled = false;
-
-        yield return new WaitForSeconds(stunTime);
-
-        if (flight != null) flight.enabled = true;
-        stunned = false;
     }
 }

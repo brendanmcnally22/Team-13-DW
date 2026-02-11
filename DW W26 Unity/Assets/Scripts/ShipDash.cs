@@ -6,14 +6,16 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(PlayerInput))]
 public class ShipDash : MonoBehaviour
 {
-    [SerializeField] float dashImpulse = 10f;   // sideways kick
+    [SerializeField] float dashImpulse = 10f;      // sideways kick
     [SerializeField] float dashCooldown = 0.6f;
-    [SerializeField] float dashLockTime = 0.12f; // tiny “commit” so it feels snappy
+    [SerializeField] float dashLockTime = 0.12f;   // keep this (commit window)
 
     Rigidbody rb;
     PlayerInput pi;
     Gamepad pad;
+
     float nextDashTime;
+    bool dashLocked;
 
     void Awake()
     {
@@ -26,6 +28,9 @@ public class ShipDash : MonoBehaviour
         pad = null;
         foreach (var d in pi.devices)
             if (d is Gamepad g) { pad = g; break; }
+
+        // IMPORTANT: no Gamepad.current fallback here
+        // fallback can make P1 affect P2, and breaks rumble targeting.
     }
 
     void Update()
@@ -46,14 +51,14 @@ public class ShipDash : MonoBehaviour
 
     IEnumerator DashRoutine(float dir)
     {
-        // optional: briefly disable flight so dash doesn’t get “fought”
-        var flight = GetComponent<ShipControllerFlight>();
-        if (flight != null) flight.enabled = false;
+        dashLocked = true;
 
+        // quick sideways impulse
         rb.AddForce(transform.right * dir * dashImpulse, ForceMode.VelocityChange);
 
+        // commit window (you asked to keep this)
         yield return new WaitForSeconds(dashLockTime);
 
-        if (flight != null) flight.enabled = true;
+        dashLocked = false;
     }
 }
