@@ -1251,6 +1251,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4677324220665258, guid: b4201d402613a4464b35c805dafcca62, type: 3}
   m_PrefabInstance: {fileID: 2114259352}
   m_PrefabAsset: {fileID: 0}
+--- !u!135 &362105102 stripped
+SphereCollider:
+  m_CorrespondingSourceObject: {fileID: 7568472841969023686, guid: b4201d402613a4464b35c805dafcca62, type: 3}
+  m_PrefabInstance: {fileID: 2114259352}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &439679298
 GameObject:
   m_ObjectHideFlags: 0
@@ -2841,6 +2846,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 989600935}
   m_CullTransparentMesh: 1
+--- !u!23 &1092330815 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 23349094631189316, guid: b4201d402613a4464b35c805dafcca62, type: 3}
+  m_PrefabInstance: {fileID: 2114259352}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1111231692
 GameObject:
   m_ObjectHideFlags: 0
@@ -4395,6 +4405,72 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1369214430}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1626223426
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1626223428}
+  - component: {fileID: 1626223427}
+  m_Layer: 0
+  m_Name: AsteroidBelt
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1626223427
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1626223426}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 968449e61cd7e9d48b48c451919470df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  center: {fileID: 362105101}
+  ringPlane: {fileID: 2091307889}
+  followRingPlaneRotation: 1
+  ringNormalOffset: 95
+  extraRandomOffset: 0
+  saturnRenderer: {fileID: 1092330815}
+  saturnCollider: {fileID: 362105102}
+  innerRadiusMultiplier: 1.2
+  beltRadialWidth: 2000
+  beltThickness: 50
+  tangentJitter: 30
+  asteroidPrefabs:
+  - {fileID: 7607958541452297935, guid: 011b167279cc65a4cb18f84726daf023, type: 3}
+  - {fileID: 8003914508875383451, guid: 205c965ad7ca82840922639f8610fb43, type: 3}
+  - {fileID: 5031364142465689177, guid: 80aad8414df23634f84f07de5ac6b440, type: 3}
+  - {fileID: 2433741432215076360, guid: fc5709109651e124b9b1b6d15fd9cd8d, type: 3}
+  asteroidCount: 1500
+  randomScale: {x: 1.2, y: 2.1}
+  randomRotation: 1
+  degreesPerSecond: 5
+  seed: 0
+  pressRToRebuild: 0
+--- !u!4 &1626223428
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1626223426}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -397.8894, y: 235.38403, z: 1668.0854}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1634863039
 GameObject:
@@ -6107,6 +6183,24 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 4300000, guid: 8aa4a8814028a42fea37772e41f89781, type: 3}
+--- !u!4 &2091307889 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4277827671834268, guid: b4201d402613a4464b35c805dafcca62, type: 3}
+  m_PrefabInstance: {fileID: 2114259352}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2091307890
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2091307882}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 766e068f7aa589e40a8b428af00dc5e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rotationSpeed: 2
 --- !u!1001 &2114259352
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6203,6 +6297,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1628933999407032, guid: b4201d402613a4464b35c805dafcca62, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2091307886}
+    - targetCorrespondingSourceObject: {fileID: 1628933999407032, guid: b4201d402613a4464b35c805dafcca62, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2091307890}
   m_SourcePrefab: {fileID: 100100000, guid: b4201d402613a4464b35c805dafcca62, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
@@ -6224,3 +6321,4 @@ SceneRoots:
   - {fileID: 212370401}
   - {fileID: 292473125}
   - {fileID: 1279904241}
+  - {fileID: 1626223428}
