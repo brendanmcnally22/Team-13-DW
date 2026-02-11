@@ -65,6 +65,7 @@ public class PlayerSpawn : MonoBehaviour
                 Debug.LogWarning($"{name}: SpawnPoints[0] and SpawnPoints[1] are the SAME Transform. Both players will spawn on top of each other.");
         }
     }
+ 
 
     public void OnPlayerJoined(PlayerInput playerInput)
     {

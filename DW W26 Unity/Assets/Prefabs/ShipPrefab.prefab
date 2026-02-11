@@ -15,7 +15,6 @@ GameObject:
   - component: {fileID: 2708562649026150741}
   - component: {fileID: 1499590251449030136}
   - component: {fileID: 4662495879733800091}
-  - component: {fileID: 6777314587793881177}
   - component: {fileID: 7214294916636882648}
   - component: {fileID: 7673756998749247803}
   m_Layer: 3
@@ -89,9 +88,6 @@ MonoBehaviour:
   maxSpeed: 150
   acceleration: 95
   brakePower: 35
-  throttleRampUp: 1.8
-  throttleRampDown: 3.5
-  hardStopStrength: 10
   lateralDamp: 4.5
   verticalDamp: 2
   yawRate: 1.4
@@ -111,11 +107,10 @@ MonoBehaviour:
   aimReturnSpeed: 4
   aimSteerStrength: 1
   aimPitchStrength: 1
-  maxRumble: 0.4
-  brakeRumble: 0.75
   rumbleSmooth: 15
-  throttleBurst: 0.9
-  burstDuration: 0.12
+  throttleBurstIntensity: 0.85
+  throttleBurstTime: 0.12
+  brakeRumbleIntensity: 0.75
   dashLateralDampMultiplier: 0.05
 --- !u!114 &1347986384396866640
 MonoBehaviour:
@@ -291,21 +286,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1ee8dc709de4db43aec217072b6dacc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &6777314587793881177
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 221812434454255184}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 968449e61cd7e9d48b48c451919470df, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  slowMultiplier: 0.85
-  pushBack: 1.8
-  hitCooldown: 0.08
 --- !u!114 &7214294916636882648
 MonoBehaviour:
   m_ObjectHideFlags: 0
