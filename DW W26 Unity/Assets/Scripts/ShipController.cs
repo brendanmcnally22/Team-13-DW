@@ -6,21 +6,14 @@ using UnityEngine.InputSystem;
 public class ShipControllerFlight : MonoBehaviour
 {
     [Header("Aim (DO NOT set this to the camera)")]
-    [SerializeField] Transform aimTransform;
+    [SerializeField] Transform aimTransform; // ship/AimPivot (auto-created if missing)
 
     [Header("Speed")]
     [SerializeField] float maxSpeed = 55f;
     [SerializeField] float acceleration = 35f;
     [SerializeField] float brakePower = 4f;
 
-    [Header("Throttle Ramp (prevents instant full throttle)")]
-    [SerializeField] float throttleRampUp = 1.8f;
-    [SerializeField] float throttleRampDown = 3.5f;
-
-    [Header("Brake Hard Stop")]
-    [SerializeField] float hardStopStrength = 10f;
-
-    [Header("Arcade Drift Kill")]
+    [Header("Arcade Drift Kill (the fun sliders)")]
     [SerializeField] float lateralDamp = 4.5f;
     [SerializeField] float verticalDamp = 2.0f;
 
@@ -29,7 +22,7 @@ public class ShipControllerFlight : MonoBehaviour
     [SerializeField] float pitchRate = 1.1f;
     [SerializeField] float rollRate = 1.6f;
 
-    [Header("Turn Spring")]
+    [Header("Turn Spring (tightness)")]
     [SerializeField] float turnSpring = 22f;
     [SerializeField] float turnDamp = 8.5f;
     [SerializeField] float maxAngVel = 5.0f;
@@ -46,22 +39,22 @@ public class ShipControllerFlight : MonoBehaviour
     [SerializeField] float minLookPitch = -18f;
     [SerializeField] float maxLookPitch = 28f;
     [SerializeField] float aimReturnSpeed = 4.0f;
+    public float MaxSpeed => maxSpeed;
+    public float Throttle01 => throttle;
 
     [Header("Aim Steers Ship")]
     [SerializeField] float aimSteerStrength = 1.0f;
     [SerializeField] float aimPitchStrength = 1.0f;
 
     [Header("Rumble (PS5 controller)")]
-    [SerializeField] float maxRumble = 0.6f;
-    [SerializeField] float brakeRumble = 0.75f;
-    [SerializeField] float rumbleSmooth = 10f;
+    [SerializeField] float rumbleSmooth = 12f;
 
-    [Header("Rumble Burst")]
-    [SerializeField] float throttleBurst = 0.9f;
-    [SerializeField] float burstDuration = 0.12f;
+    [Header("Throttle Rumble Burst (NOT continuous)")]
+    [SerializeField] float throttleBurstIntensity = 0.85f;
+    [SerializeField] float throttleBurstTime = 0.12f;
 
-    [Header("Dash Support")]
-    [SerializeField] float dashLateralDampMultiplier = 0.05f; // while dashing, lateral damp is reduced
+    [Header("Brake Rumble (continuous)")]
+    [SerializeField] float brakeRumbleIntensity = 0.75f;
 
     Rigidbody rb;
     PlayerInput pi;
@@ -75,28 +68,28 @@ public class ShipControllerFlight : MonoBehaviour
     InputAction rollRAction;
 
     float throttle;
-    float throttleTarget;
     float brake;
+
+    float yawIn;
+    float rollIn;
 
     float yawSm;
     float rollSm;
 
-    float rumbleCurrent;
-
     float lookYaw;
     float lookPitch;
 
-    float prevThrottleTarget;
-    float burstTimer;
+    float rumbleCurrent;
 
-    float dashTimer;
+    float prevThrottle;
+    float throttleBurstTimer;
 
     float externalBurstTimer;
     float externalBurstIntensity;
 
-    public float Throttle01 => throttle;
-    public float Brake01 => brake;
-    public float MaxSpeed => maxSpeed;
+    float dashTimer;
+    [Header("Dash Support")]
+    [SerializeField] float dashLateralDampMultiplier = 0.05f;
 
     void Awake()
     {
@@ -138,13 +131,13 @@ public class ShipControllerFlight : MonoBehaviour
         rollLAction = FindAction("Player/Previous", "RollLeft", "Previous");
         rollRAction = FindAction("Player/Next", "RollRight", "Next");
 
-        // ONLY paired device (prevents overlap)
+        // IMPORTANT: do NOT use Gamepad.current (that’s how 2 controllers overlap)
         pad = null;
         foreach (var d in pi.devices)
             if (d is Gamepad g) { pad = g; break; }
 
         if (pad == null)
-            Debug.LogWarning($"{name}: No gamepad paired. Rumble disabled.");
+            Debug.LogWarning($"{name}: No gamepad paired to this PlayerInput. Rumble off.");
     }
 
     InputAction FindAction(params string[] names)
@@ -162,52 +155,50 @@ public class ShipControllerFlight : MonoBehaviour
     {
         if (dashTimer > 0f) dashTimer -= Time.deltaTime;
         if (externalBurstTimer > 0f) externalBurstTimer -= Time.deltaTime;
+        if (throttleBurstTimer > 0f) throttleBurstTimer -= Time.deltaTime;
 
-        // --- Read inputs (actions). If actions are missing, you’ll get 0s. ---
-        Vector2 move = (moveAction != null) ? moveAction.ReadValue<Vector2>() : Vector2.zero;
-        Vector2 look = (lookAction != null) ? lookAction.ReadValue<Vector2>() : Vector2.zero;
+        // ----- Left stick yaw -----
+        yawIn = 0f;
+        if (moveAction != null)
+            yawIn = moveAction.ReadValue<Vector2>().x;
+        if (Mathf.Abs(yawIn) < stickDeadzone) yawIn = 0f;
 
-        float rawThrottle = (throttleAction != null) ? throttleAction.ReadValue<float>() : 0f;
-        float rawBrake = (brakeAction != null) ? brakeAction.ReadValue<float>() : 0f;
-
-        float rollIn = 0f;
+        // ----- Roll (L1/R1) -----
+        rollIn = 0f;
         if (rollLAction != null && rollLAction.IsPressed()) rollIn -= 1f;
         if (rollRAction != null && rollRAction.IsPressed()) rollIn += 1f;
 
-        // deadzones
-        if (Mathf.Abs(move.x) < stickDeadzone) move.x = 0f;
-        if (Mathf.Abs(look.x) < stickDeadzone) look.x = 0f;
-        if (Mathf.Abs(look.y) < stickDeadzone) look.y = 0f;
+        // ----- Triggers -----
+        throttle = (throttleAction != null) ? Mathf.Clamp01(throttleAction.ReadValue<float>()) : 0f;
+        brake = (brakeAction != null) ? Mathf.Clamp01(brakeAction.ReadValue<float>()) : 0f;
 
-        rawThrottle = Mathf.Clamp01(rawThrottle);
-        rawBrake = Mathf.Clamp01(rawBrake);
+        if (throttle < triggerDeadzone) throttle = 0f;
+        if (brake < triggerDeadzone) brake = 0f;
 
-        if (rawThrottle < triggerDeadzone) rawThrottle = 0f;
-        if (rawBrake < triggerDeadzone) rawBrake = 0f;
+        // Throttle burst: only when first pressing
+        if (throttle > 0.05f && prevThrottle <= 0.05f)
+            throttleBurstTimer = throttleBurstTime;
 
-        throttleTarget = rawThrottle;
-        brake = rawBrake;
+        prevThrottle = throttle;
 
-        // ramp
-        float rate = (throttleTarget > throttle) ? throttleRampUp : throttleRampDown;
-        throttle = Mathf.MoveTowards(throttle, throttleTarget, rate * Time.deltaTime);
-
-        // burst
-        if (throttleTarget > 0.05f && prevThrottleTarget <= 0.05f)
-            burstTimer = burstDuration;
-        prevThrottleTarget = throttleTarget;
-
-        // smooth yaw/roll
-        yawSm = Mathf.Lerp(yawSm, move.x, inputSmooth * Time.deltaTime);
+        // Smooth inputs
+        yawSm = Mathf.Lerp(yawSm, yawIn, inputSmooth * Time.deltaTime);
         rollSm = Mathf.Lerp(rollSm, rollIn, inputSmooth * Time.deltaTime);
 
-        UpdateAimFromRightStick(look);
+        UpdateAimFromRightStick();
         UpdateRumble();
     }
 
-    void UpdateAimFromRightStick(Vector2 look)
+    void UpdateAimFromRightStick()
     {
         if (aimTransform == null) return;
+
+        Vector2 look = Vector2.zero;
+        if (lookAction != null)
+            look = lookAction.ReadValue<Vector2>();
+
+        if (Mathf.Abs(look.x) < stickDeadzone) look.x = 0f;
+        if (Mathf.Abs(look.y) < stickDeadzone) look.y = 0f;
 
         bool hasLook = look.sqrMagnitude > 0.0001f;
 
@@ -232,32 +223,26 @@ public class ShipControllerFlight : MonoBehaviour
     {
 #if UNITY_6000_0_OR_NEWER
         rb.linearDamping = 0.6f + brake * brakePower;
-#else
-        rb.drag = 0.6f + brake * brakePower;
-#endif
-
-        if (throttle > 0.01f)
-            rb.AddForce(transform.forward * throttle * acceleration, ForceMode.Acceleration);
-
-#if UNITY_6000_0_OR_NEWER
         Vector3 worldVel = rb.linearVelocity;
 #else
+        rb.drag = 0.6f + brake * brakePower;
         Vector3 worldVel = rb.velocity;
 #endif
 
-        if (brake > 0.01f && hardStopStrength > 0.01f)
-            worldVel = Vector3.Lerp(worldVel, Vector3.zero, brake * hardStopStrength * Time.fixedDeltaTime);
+        // Thrust forward
+        if (throttle > 0.01f)
+            rb.AddForce(transform.forward * throttle * acceleration, ForceMode.Acceleration);
 
+        // Drift kill
         Vector3 localVel = transform.InverseTransformDirection(worldVel);
 
-        // ---- THIS is the dash fix: don’t delete lateral velocity during dash ----
         float lateral = (dashTimer > 0f) ? (lateralDamp * dashLateralDampMultiplier) : lateralDamp;
-
         localVel.x = Mathf.Lerp(localVel.x, 0f, lateral * Time.fixedDeltaTime);
         localVel.y = Mathf.Lerp(localVel.y, 0f, verticalDamp * Time.fixedDeltaTime);
 
         worldVel = transform.TransformDirection(localVel);
 
+        // Clamp speed
         if (worldVel.magnitude > maxSpeed)
             worldVel = worldVel.normalized * maxSpeed;
 
@@ -267,8 +252,9 @@ public class ShipControllerFlight : MonoBehaviour
         rb.velocity = worldVel;
 #endif
 
-        // turning
+        // Turning
         Vector3 targetLocalAngVel = Vector3.zero;
+
         targetLocalAngVel.y += yawSm * yawRate;
 
         if (aimTransform != null)
@@ -300,18 +286,16 @@ public class ShipControllerFlight : MonoBehaviour
     {
         if (pad == null) return;
 
-        float baseRumble = Mathf.Max(throttle * maxRumble, brake * brakeRumble);
+        // throttle = burst ONLY
+        float throttleBurst = (throttleBurstTimer > 0f) ? throttleBurstIntensity : 0f;
 
-        float burst = 0f;
-        if (burstTimer > 0f)
-        {
-            burst = throttleBurst;
-            burstTimer -= Time.deltaTime;
-        }
+        // brake = continuous (optional)
+        float brakeRumble = brake * brakeRumbleIntensity;
 
+        // external bursts (dash / asteroid)
         float ext = (externalBurstTimer > 0f) ? externalBurstIntensity : 0f;
 
-        float target = Mathf.Clamp01(Mathf.Max(baseRumble, burst, ext));
+        float target = Mathf.Clamp01(Mathf.Max(throttleBurst, brakeRumble, ext));
         rumbleCurrent = Mathf.Lerp(rumbleCurrent, target, rumbleSmooth * Time.deltaTime);
 
         if (rumbleCurrent < 0.01f)
@@ -337,16 +321,29 @@ public class ShipControllerFlight : MonoBehaviour
             aimTransform.localRotation = Quaternion.identity;
     }
 
-    // Called by ShipDash so lateral damping doesn’t murder the dash
+    // Dash calls this so lateral damping doesn't delete dash speed
     public void BeginDash(float lockSeconds)
     {
         dashTimer = Mathf.Max(dashTimer, lockSeconds);
     }
 
-    // Called by dash / collisions
+    // Dash / asteroids can call this for quick “hit” rumble
     public void AddExternalRumbleBurst(float intensity, float duration)
     {
         externalBurstIntensity = Mathf.Clamp01(Mathf.Max(externalBurstIntensity, intensity));
         externalBurstTimer = Mathf.Max(externalBurstTimer, duration);
     }
+    public float Speed01
+    {
+        get
+        {
+#if UNITY_6000_0_OR_NEWER
+            float s = rb != null ? rb.linearVelocity.magnitude : 0f;
+#else
+        float s = rb != null ? rb.velocity.magnitude : 0f;
+#endif
+            return Mathf.Clamp01(s / Mathf.Max(0.01f, maxSpeed));
+        }
+    }
+
 }

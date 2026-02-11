@@ -89,6 +89,8 @@ MonoBehaviour:
   maxSpeed: 150
   acceleration: 95
   brakePower: 35
+  throttleRampUp: 1.8
+  throttleRampDown: 3.5
   hardStopStrength: 10
   lateralDamp: 4.5
   verticalDamp: 2
@@ -114,6 +116,7 @@ MonoBehaviour:
   rumbleSmooth: 15
   throttleBurst: 0.9
   burstDuration: 0.12
+  dashLateralDampMultiplier: 0.05
 --- !u!114 &1347986384396866640
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -251,7 +254,7 @@ CapsuleCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
@@ -274,6 +277,8 @@ MonoBehaviour:
   dashImpulse: 105.2
   dashCooldown: 2
   dashLockTime: 0.5
+  dashRumble: 0.85
+  dashRumbleTime: 0.1
 --- !u!114 &4662495879733800091
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -298,8 +303,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 968449e61cd7e9d48b48c451919470df, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  velocityMulOnHit: 0.8
-  minTimeBetweenHits: 0.15
+  slowMultiplier: 0.85
+  pushBack: 1.8
+  hitCooldown: 0.08
 --- !u!114 &7214294916636882648
 MonoBehaviour:
   m_ObjectHideFlags: 0
