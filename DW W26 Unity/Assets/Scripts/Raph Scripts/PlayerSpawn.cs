@@ -5,6 +5,8 @@ using UnityEngine.InputSystem;
 
 public class PlayerSpawn : MonoBehaviour
 {
+    public static System.Action OnRaceStarted;
+
     [field: SerializeField] public Transform[] SpawnPoints { get; private set; }
     [field: SerializeField] public Color[] PlayerColors { get; private set; }
 
@@ -28,6 +30,19 @@ public class PlayerSpawn : MonoBehaviour
 
     [Header("Race")]
     [SerializeField] RaceManager race;
+    [SerializeField] RacePositionUI racePositionUI;
+
+    [Header("Track refs (scene objects)")]
+    [SerializeField] Transform saturnCenter;
+    [SerializeField] Transform ringPlane;
+    [SerializeField] Transform startLineRef;
+    [SerializeField] bool clockwise;
+    [SerializeField] bool preventBackwardProgress = true;
+
+    [Header("Throttle UI (reads input, NOT speed)")]
+    [SerializeField] string throttleFloatAction = "Throttle"; // preferred float action
+    [SerializeField] string moveVectorAction = "Move";        // fallback Vector2
+    [SerializeField] bool invertThrottle = false;
 
     public int PlayerCount { get; private set; }
 
@@ -36,18 +51,57 @@ public class PlayerSpawn : MonoBehaviour
 
     void Start()
     {
-        // if you accidentally have 2 spawners in scene, you're gonna have a bad time
         var allSpawners = FindObjectsByType<PlayerSpawn>(FindObjectsSortMode.None);
         if (allSpawners.Length > 1)
-            Debug.LogWarning($"WARNING: There are {allSpawners.Length} PlayerSpawn objects in the scene. That can cause double-spawning / overrides.");
+            Debug.LogWarning($"WARNING: There are {allSpawners.Length} PlayerSpawn objects in the scene.");
 
         if (race == null) race = FindFirstObjectByType<RaceManager>();
+        if (racePositionUI == null) racePositionUI = FindFirstObjectByType<RacePositionUI>();
 
         SetCountdownActive(false);
         countdownRunning = false;
 
         ValidateSetup();
         UpdateJoinUI();
+    }
+
+    void Update()
+    {
+        // throttle sliders per player (each uses its own PlayerInput + its own ShipHUD slot)
+        for (int slot = 0; slot < 2; slot++)
+        {
+            var pi = joined[slot];
+            if (pi == null) continue;
+
+            var hud = ShipHUD.Get(slot);
+            if (hud == null || hud.throttleSlider == null) continue;
+
+            float v = ReadThrottle01(pi);
+            if (invertThrottle) v = 1f - v;
+
+            hud.throttleSlider.value = v;
+        }
+    }
+
+    float ReadThrottle01(PlayerInput pi)
+    {
+        if (pi == null || pi.actions == null) return 0f;
+
+        var a = pi.actions.FindAction(throttleFloatAction, false);
+        if (a != null)
+        {
+            float raw = a.ReadValue<float>();     // could be 0..1 or -1..1
+            return Mathf.InverseLerp(-1f, 1f, raw);
+        }
+
+        var mv = pi.actions.FindAction(moveVectorAction, false);
+        if (mv != null)
+        {
+            Vector2 stick = mv.ReadValue<Vector2>();
+            return Mathf.InverseLerp(-1f, 1f, stick.y);
+        }
+
+        return 0f;
     }
 
     void ValidateSetup()
@@ -57,15 +111,6 @@ public class PlayerSpawn : MonoBehaviour
 
         if (PlayerColors == null || PlayerColors.Length < 2)
             Debug.LogError($"{name}: PlayerColors needs size 2 (P1 at [0], P2 at [1]).");
-
-        if (SpawnPoints != null && SpawnPoints.Length >= 2)
-        {
-            if (SpawnPoints[0] == null || SpawnPoints[1] == null)
-                Debug.LogError($"{name}: One of your SpawnPoints entries is NULL.");
-
-            if (SpawnPoints[0] != null && SpawnPoints[1] != null && SpawnPoints[0] == SpawnPoints[1])
-                Debug.LogWarning($"{name}: SpawnPoints[0] and SpawnPoints[1] are the SAME Transform. Both players will stack.");
-        }
     }
 
     public void OnPlayerJoined(PlayerInput playerInput)
@@ -99,20 +144,17 @@ public class PlayerSpawn : MonoBehaviour
 
         int playerNumber = slot + 1;
 
-        // freeze movement until countdown ends (do it before force-spawn)
         var flight = playerInput.GetComponent<ShipControllerFlight>();
         if (flight != null) flight.enabled = false;
 
         var dash = playerInput.GetComponent<ShipDash>();
         if (dash != null) dash.enabled = false;
 
-        // Force spawn HARD (beats scripts that reset position in Start/first frame)
         if (SpawnPoints[slot] != null)
             StartCoroutine(ForceSpawnRoutine(playerInput, SpawnPoints[slot]));
         else
             Debug.LogError($"SpawnPoints[{slot}] is NULL. Fix inspector.");
 
-        // Color / setup
         var pc = playerInput.GetComponent<PlayerController>();
         if (pc != null)
         {
@@ -124,14 +166,25 @@ public class PlayerSpawn : MonoBehaviour
         joined[slot] = playerInput;
         PlayerCount = CountJoined();
 
-        // Camera targets
         if (slot == 0 && cam1 != null) cam1.target = playerInput.transform;
         if (slot == 1 && cam2 != null) cam2.target = playerInput.transform;
 
-        // Register to race manager
         var ship = playerInput.GetComponent<RaceShip>();
         if (ship == null) ship = playerInput.gameObject.AddComponent<RaceShip>();
         if (race != null) race.RegisterShip(ship, slot);
+
+        // Configure tracker + link to RacePositionUI (no inspector dragging)
+        var tracker = playerInput.GetComponent<CircularProgressTracker>();
+        if (tracker == null) tracker = playerInput.gameObject.AddComponent<CircularProgressTracker>();
+
+        tracker.Configure(slot, saturnCenter, ringPlane, startLineRef, clockwise, preventBackwardProgress);
+
+        if (racePositionUI != null)
+            racePositionUI.AssignTracker(slot, tracker);
+
+        // Boost script gets its slot so it updates the correct boost slider
+        var boost = playerInput.GetComponent<HoldBoostSystem>();
+        if (boost != null) boost.SetSlot(slot);
 
         UpdateJoinUI();
 
@@ -143,8 +196,6 @@ public class PlayerSpawn : MonoBehaviour
     {
         countdownRunning = true;
         SetCountdownActive(true);
-
-        // instantly switch label to "THE RACE WILL START IN"
         UpdateJoinUI();
 
         for (int t = countdownSeconds; t >= 1; t--)
@@ -171,6 +222,7 @@ public class PlayerSpawn : MonoBehaviour
         }
 
         if (race != null) race.StartRace();
+        OnRaceStarted?.Invoke();
 
         yield return new WaitForSeconds(0.6f);
 
@@ -179,15 +231,12 @@ public class PlayerSpawn : MonoBehaviour
         UpdateJoinUI();
     }
 
-    // --- UI ---
-
     void UpdateJoinUI()
     {
-        // during countdown: label becomes the "race will start" text, numbers are separate TMP below
         if (countdownRunning)
         {
-            if (joinText1) joinText1.text = "THE RACE WILL START IN";
-            if (joinText2) joinText2.text = "THE RACE WILL START IN";
+            if (joinText1) joinText1.text = "THE RACE STARTS IN";
+            if (joinText2) joinText2.text = "THE RACE STARTS IN";
             return;
         }
 
@@ -203,9 +252,8 @@ public class PlayerSpawn : MonoBehaviour
         }
         else
         {
-            // both joined, countdown will start immediately (or already did)
-            if (joinText1) joinText1.text = "THE RACE WILL START IN";
-            if (joinText2) joinText2.text = "THE RACE WILL START IN";
+            if (joinText1) joinText1.text = "THE RACE STARTS IN";
+            if (joinText2) joinText2.text = "THE RACE STARTS IN";
         }
     }
 
@@ -221,18 +269,14 @@ public class PlayerSpawn : MonoBehaviour
         if (countdownText2) countdownText2.gameObject.SetActive(on);
     }
 
-    // --- spawn forcing (the thing that finally made it behave lol) ---
-
     IEnumerator ForceSpawnRoutine(PlayerInput playerInput, Transform spawn)
     {
         var shipObj = playerInput.gameObject;
 
-        // disable colliders so nothing shoves you immediately
         var cols = shipObj.GetComponentsInChildren<Collider>(true);
         for (int i = 0; i < cols.Length; i++)
             if (cols[i] != null) cols[i].enabled = false;
 
-        // rb might be on a child
         var rb = shipObj.GetComponentInChildren<Rigidbody>(true);
 
         bool hadRb = rb != null;
@@ -250,11 +294,9 @@ public class PlayerSpawn : MonoBehaviour
 
         HardSetPose(shipObj.transform, rb, spawn);
 
-        // beat scripts that run in Start / first frame
         yield return new WaitForEndOfFrame();
         HardSetPose(shipObj.transform, rb, spawn);
 
-        // beat physics step
         yield return new WaitForFixedUpdate();
         HardSetPose(shipObj.transform, rb, spawn);
 
@@ -268,8 +310,6 @@ public class PlayerSpawn : MonoBehaviour
         yield return null;
         for (int i = 0; i < cols.Length; i++)
             if (cols[i] != null) cols[i].enabled = true;
-
-        Debug.Log($"Final spawn locked: {shipObj.name} @ {shipObj.transform.position}");
     }
 
     void HardSetPose(Transform shipRoot, Rigidbody rb, Transform spawn)
@@ -292,8 +332,6 @@ public class PlayerSpawn : MonoBehaviour
 
         Physics.SyncTransforms();
     }
-
-    // --- helpers ---
 
     int GetNextFreeSlot()
     {

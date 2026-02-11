@@ -3,33 +3,74 @@ using TMPro;
 
 public class Timer : MonoBehaviour
 {
-    public TMP_Text TimerUI;
-    private float seconds = 0;
-    private float minutes = 0;
-    private float secondsDisplayed = 0;
-    // Update is called once per frame
+    [Header("UI")]
+    [SerializeField] TMP_Text timerUI;
+
+    [Header("Session")]
+    [SerializeField] float maxSeconds = 300f; // 5 minutes
+
+    float elapsed;
+    bool running;
+
+    void Awake()
+    {
+        if (!timerUI) timerUI = GetComponent<TMP_Text>();
+        ResetTimer();
+        UpdateText();
+    }
+
+    void OnEnable()
+    {
+        // this event comes from PlayerSpawn (patch below)
+        PlayerSpawn.OnRaceStarted += StartTimer;
+    }
+
+    void OnDisable()
+    {
+        PlayerSpawn.OnRaceStarted -= StartTimer;
+    }
+
     void Update()
     {
-        seconds += Time.deltaTime;
-        // Display only seconds rather than microseconds or milliseconds
-        secondsDisplayed = Mathf.Floor(seconds);
-        // Reset seconds and increase minutes when seconds is 60 or more
-        if (secondsDisplayed >= 60)
+        if (!running) return;
+
+        elapsed += Time.deltaTime;
+
+        if (elapsed >= maxSeconds)
         {
-            secondsDisplayed = 0;
-            seconds = 0;
-            minutes += 1;
+            elapsed = maxSeconds;
+            running = false;
         }
-        // If the seconds does not have a 10s place, then display it with a 0
-        if (secondsDisplayed < 10)
-        {
-            TimerUI.text = $"Time {minutes}:0{secondsDisplayed}";
-        }
-        // Otherwise, show it as normal
-        else
-        {
-            TimerUI.text = $"Time {minutes}:{secondsDisplayed}";
-        }
-            
+
+        UpdateText();
+    }
+
+    public void StartTimer()
+    {
+        elapsed = 0f;
+        running = true;
+        UpdateText();
+    }
+
+    public void StopTimer()
+    {
+        running = false;
+    }
+
+    public void ResetTimer()
+    {
+        elapsed = 0f;
+        running = false;
+    }
+
+    void UpdateText()
+    {
+        if (!timerUI) return;
+
+        int total = Mathf.FloorToInt(elapsed);
+        int minutes = total / 60;
+        int seconds = total % 60;
+
+        timerUI.text = $"Time {minutes}:{seconds:00}";
     }
 }

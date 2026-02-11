@@ -17,6 +17,9 @@ GameObject:
   - component: {fileID: 4662495879733800091}
   - component: {fileID: 7214294916636882648}
   - component: {fileID: 7673756998749247803}
+  - component: {fileID: -7436064741378305808}
+  - component: {fileID: 1112752000208251694}
+  - component: {fileID: -4564205883427636843}
   m_Layer: 3
   m_Name: ShipPrefab
   m_TagString: Player
@@ -87,7 +90,7 @@ MonoBehaviour:
   aimTransform: {fileID: 3641968969279354168}
   maxSpeed: 150
   acceleration: 95
-  brakePower: 35
+  brakePower: 1
   lateralDamp: 4.5
   verticalDamp: 2
   yawRate: 1.4
@@ -320,6 +323,58 @@ MonoBehaviour:
   idleRange: 6
   maxRange: 14
   smooth: 12
+--- !u!114 &-7436064741378305808
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 221812434454255184}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8aa5e7fef08c4c744af75a9bd9cda424, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  center: {fileID: 0}
+  ringPlane: {fileID: 0}
+  startLine: {fileID: 0}
+  clockwise: 0
+  preventBackwardProgress: 1
+--- !u!114 &1112752000208251694
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 221812434454255184}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 470206a2058d5944a9656d03eabd2c94, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerInput: {fileID: 1347986384396866640}
+  minImpact: 2
+  maxImpact: 15
+  rumbleDuration: 0.15
+--- !u!114 &-4564205883427636843
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 221812434454255184}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f79e29036779771449c3b26064296d74, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerInput: {fileID: 1347986384396866640}
+  boostActionName: Boost
+  boostAccel: 25
+  maxFuel: 3
+  drainPerSecond: 1
+  regenPerSecond: 0.5
+  boostSlider: {fileID: 0}
 --- !u!1 &3634249750757638536
 GameObject:
   m_ObjectHideFlags: 0
