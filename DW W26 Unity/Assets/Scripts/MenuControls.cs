@@ -1,0 +1,90 @@
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+public class MenuControls : MonoBehaviour
+{
+    public float selection;
+    [Space(10)]
+    [Header("Start")]
+    public GameObject StartSprite;
+    public GameObject StartSelected;
+    [Space(10)]
+    [Header("Controls")]
+    public GameObject ControlsSprite;
+    public GameObject ControlsSelected;
+    [Space(10)]
+    [Header("Quit")]
+    public GameObject QuitSprite;
+    public GameObject QuitSelected;
+    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    void Start()
+    {
+        selection = 1;
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        // Go down
+        if (Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            if (selection <= 3)
+            {
+                selection++;
+            }
+            // Loop back around
+            if (selection > 3)
+            {
+                selection = 1;
+            }
+        }
+        // Go up
+        if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            if (selection >= 1)
+            {
+                selection--;
+            }
+            // Loop back around
+            if (selection < 1)
+            {
+                selection = 3;
+            }
+        }
+        // Start is Selected
+        if (selection == 1)
+        {
+            StartSprite.SetActive(false);
+            StartSelected.SetActive(true);
+            ControlsSprite.SetActive(true);
+            ControlsSelected.SetActive(false);
+            QuitSprite.SetActive(true);
+            QuitSelected.SetActive(false);
+            // Start Race
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                SceneManager.LoadScene("Dual Monitor Scene");
+            }
+        }
+        // Controls Selected
+        if (selection == 2)
+        {
+            StartSprite.SetActive(true);
+            StartSelected.SetActive(false);
+            ControlsSprite.SetActive(false);
+            ControlsSelected.SetActive(true);
+            QuitSprite.SetActive(true);
+            QuitSelected.SetActive(false);
+        }
+        // Quit Selected
+        if (selection == 3)
+        {
+            StartSprite.SetActive(true);
+            StartSelected.SetActive(false);
+            ControlsSprite.SetActive(true);
+            ControlsSelected.SetActive(false);
+            QuitSprite.SetActive(false);
+            QuitSelected.SetActive(true);
+        }
+    }
+}
