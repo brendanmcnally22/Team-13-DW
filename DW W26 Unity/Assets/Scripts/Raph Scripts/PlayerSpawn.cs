@@ -36,9 +36,34 @@ public class PlayerSpawn : MonoBehaviour
 
     void Start()
     {
+        // if you accidentally have 2 spawners in scene, you'll get chaos
+        var allSpawners = FindObjectsByType<PlayerSpawn>(FindObjectsSortMode.None);
+        if (allSpawners.Length > 1)
+            Debug.LogWarning($"WARNING: There are {allSpawners.Length} PlayerSpawn objects in the scene. That can cause double-spawning/teleports.");
+
         if (race == null) race = FindFirstObjectByType<RaceManager>();
         SetCountdownActive(false);
         UpdateJoinUI();
+
+        ValidateSetup();
+    }
+
+    void ValidateSetup()
+    {
+        if (SpawnPoints == null || SpawnPoints.Length < 2)
+            Debug.LogError($"{name}: SpawnPoints needs size 2 (P1 at [0], P2 at [1]).");
+
+        if (PlayerColors == null || PlayerColors.Length < 2)
+            Debug.LogError($"{name}: PlayerColors needs size 2 (P1 at [0], P2 at [1]).");
+
+        if (SpawnPoints != null && SpawnPoints.Length >= 2)
+        {
+            if (SpawnPoints[0] == null || SpawnPoints[1] == null)
+                Debug.LogError($"{name}: One of your SpawnPoints entries is NULL. If SpawnPoints[0] is null, P1 will NOT be teleported.");
+
+            if (SpawnPoints[0] != null && SpawnPoints[1] != null && SpawnPoints[0] == SpawnPoints[1])
+                Debug.LogWarning($"{name}: SpawnPoints[0] and SpawnPoints[1] are the SAME Transform. Both players will spawn on top of each other.");
+        }
     }
 
     public void OnPlayerJoined(PlayerInput playerInput)
@@ -62,20 +87,35 @@ public class PlayerSpawn : MonoBehaviour
             return;
         }
 
-        if (PlayerCount >= 2)
+        int slot = GetNextFreeSlot();
+        if (slot < 0)
         {
             Debug.Log($"Already have 2 players. Destroying {playerInput.gameObject.name}.");
             Destroy(playerInput.gameObject);
             return;
         }
 
-        int slot = PlayerCount; // 0=P1, 1=P2
         int playerNumber = slot + 1;
 
-        // Teleport safely (prevents Saturn shove / only-one-spawnpoint-works weirdness)
-        SafeTeleport(playerInput.gameObject, SpawnPoints[slot]);
+        if (SpawnPoints[slot] == null)
+        {
+            Debug.LogError($"SpawnPoints[{slot}] is NULL. Player will spawn at prefab position instead (fix your inspector).");
+        }
+        else
+        {
+            Debug.Log($"Join -> assigning P{playerNumber} to slot {slot}. SpawnPoint = {SpawnPoints[slot].name} @ {SpawnPoints[slot].position}");
+        }
 
-        Debug.Log($"Spawned P{playerNumber} at {SpawnPoints[slot].position}");
+        // Freeze movement until countdown ends (do this BEFORE we force-spawn)
+        var flight = playerInput.GetComponent<ShipControllerFlight>();
+        if (flight != null) flight.enabled = false;
+
+        var dash = playerInput.GetComponent<ShipDash>();
+        if (dash != null) dash.enabled = false;
+
+        // Force spawn HARD (overrides scripts that reset position in Start/first frame)
+        if (SpawnPoints[slot] != null)
+            StartCoroutine(ForceSpawnRoutine(playerInput, SpawnPoints[slot]));
 
         // Color / setup
         var pc = playerInput.GetComponent<PlayerController>();
@@ -86,15 +126,8 @@ public class PlayerSpawn : MonoBehaviour
             pc.AssignColor(PlayerColors[slot]);
         }
 
-        // Freeze movement until countdown ends
-        var flight = playerInput.GetComponent<ShipControllerFlight>();
-        if (flight != null) flight.enabled = false;
-
-        var dash = playerInput.GetComponent<ShipDash>();
-        if (dash != null) dash.enabled = false;
-
         joined[slot] = playerInput;
-        PlayerCount++;
+        PlayerCount = CountJoined();
 
         // Camera target
         if (slot == 0 && cam1 != null) cam1.target = playerInput.transform;
@@ -109,6 +142,97 @@ public class PlayerSpawn : MonoBehaviour
 
         if (!countdownRunning && PlayerCount >= requiredPlayers)
             StartCoroutine(CountdownThenGo());
+    }
+
+    int GetNextFreeSlot()
+    {
+        for (int i = 0; i < joined.Length; i++)
+            if (joined[i] == null)
+                return i;
+        return -1;
+    }
+
+    int CountJoined()
+    {
+        int count = 0;
+        for (int i = 0; i < joined.Length; i++)
+            if (joined[i] != null) count++;
+        return count;
+    }
+
+    IEnumerator ForceSpawnRoutine(PlayerInput playerInput, Transform spawn)
+    {
+        var shipObj = playerInput.gameObject;
+
+        // grab ALL colliders
+        var cols = shipObj.GetComponentsInChildren<Collider>(true);
+        for (int i = 0; i < cols.Length; i++)
+            if (cols[i] != null) cols[i].enabled = false;
+
+        // grab rigidbody even if it's on a child (common setup)
+        var rb = shipObj.GetComponentInChildren<Rigidbody>(true);
+
+        bool hadRb = rb != null;
+        bool oldKinematic = false;
+        bool oldDetect = true;
+
+        if (hadRb)
+        {
+            oldKinematic = rb.isKinematic;
+            oldDetect = rb.detectCollisions;
+
+            // temporarily stop physics from fighting us
+            rb.isKinematic = true;
+            rb.detectCollisions = false;
+        }
+
+        // set now (so it doesn't appear at prefab origin)
+        HardSetPose(shipObj.transform, rb, spawn);
+
+        // then do it again after Start()/first updates have had a chance to mess with it
+        yield return new WaitForEndOfFrame();
+        HardSetPose(shipObj.transform, rb, spawn);
+
+        // and once more right before physics sim (this kills most “it moved back” cases)
+        yield return new WaitForFixedUpdate();
+        HardSetPose(shipObj.transform, rb, spawn);
+
+        // restore physics/collisions
+        if (hadRb)
+        {
+            rb.detectCollisions = oldDetect;
+            rb.isKinematic = oldKinematic;
+            rb.WakeUp();
+        }
+
+        yield return null; // one more frame buffer so we don't re-enable mid-crazy
+        for (int i = 0; i < cols.Length; i++)
+            if (cols[i] != null) cols[i].enabled = true;
+
+        Debug.Log($"Final spawn locked: {shipObj.name} @ {shipObj.transform.position}");
+    }
+
+    void HardSetPose(Transform shipRoot, Rigidbody rb, Transform spawn)
+    {
+        if (shipRoot == null || spawn == null) return;
+
+        shipRoot.SetPositionAndRotation(spawn.position, spawn.rotation);
+
+        if (rb != null)
+        {
+            rb.position = spawn.position;
+            rb.rotation = spawn.rotation;
+
+#if UNITY_6000_0_OR_NEWER
+            rb.linearVelocity = Vector3.zero;
+#else
+            rb.velocity = Vector3.zero;
+#endif
+            rb.angularVelocity = Vector3.zero;
+            rb.Sleep();
+        }
+
+        Physics.SyncTransforms();
     }
 
     IEnumerator CountdownThenGo()
@@ -139,43 +263,11 @@ public class PlayerSpawn : MonoBehaviour
             if (dash != null) dash.enabled = true;
         }
 
-        // start race + music
         if (race != null) race.StartRace();
 
         yield return new WaitForSeconds(0.6f);
         SetCountdownActive(false);
         UpdateJoinUI();
-    }
-
-    void SafeTeleport(GameObject shipObj, Transform spawn)
-    {
-        if (shipObj == null || spawn == null) return;
-
-        // disable colliders for a frame so physics doesn't shove you inside Saturn
-        var cols = shipObj.GetComponentsInChildren<Collider>(true);
-        for (int i = 0; i < cols.Length; i++) cols[i].enabled = false;
-
-        shipObj.transform.SetPositionAndRotation(spawn.position, spawn.rotation);
-
-        var rb = shipObj.GetComponent<Rigidbody>();
-        if (rb != null)
-        {
-#if UNITY_6000_0_OR_NEWER
-            rb.linearVelocity = Vector3.zero;
-#else
-            rb.velocity = Vector3.zero;
-#endif
-            rb.angularVelocity = Vector3.zero;
-        }
-
-        StartCoroutine(ReenableCollidersNextFrame(cols));
-    }
-
-    IEnumerator ReenableCollidersNextFrame(Collider[] cols)
-    {
-        yield return null;
-        for (int i = 0; i < cols.Length; i++)
-            if (cols[i] != null) cols[i].enabled = true;
     }
 
     bool HasGamepad(PlayerInput input)
