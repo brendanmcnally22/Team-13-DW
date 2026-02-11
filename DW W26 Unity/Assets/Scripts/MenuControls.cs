@@ -25,28 +25,33 @@ public class MenuControls : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        // Go down
         if (Input.GetKeyDown(KeyCode.DownArrow))
         {
             if (selection <= 3)
             {
                 selection++;
             }
+            // Loop back around
             if (selection > 3)
             {
                 selection = 1;
             }
         }
+        // Go up
         if (Input.GetKeyDown(KeyCode.UpArrow))
         {
             if (selection >= 1)
             {
                 selection--;
             }
+            // Loop back around
             if (selection < 1)
             {
                 selection = 3;
             }
         }
+        // Start is Selected
         if (selection == 1)
         {
             StartSprite.SetActive(false);
@@ -55,11 +60,13 @@ public class MenuControls : MonoBehaviour
             ControlsSelected.SetActive(false);
             QuitSprite.SetActive(true);
             QuitSelected.SetActive(false);
+            // Start Race
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 SceneManager.LoadScene("Dual Monitor Scene");
             }
         }
+        // Controls Selected
         if (selection == 2)
         {
             StartSprite.SetActive(true);
@@ -69,6 +76,7 @@ public class MenuControls : MonoBehaviour
             QuitSprite.SetActive(true);
             QuitSelected.SetActive(false);
         }
+        // Quit Selected
         if (selection == 3)
         {
             StartSprite.SetActive(true);
