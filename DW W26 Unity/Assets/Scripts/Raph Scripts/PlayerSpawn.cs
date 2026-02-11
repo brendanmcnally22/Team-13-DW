@@ -9,18 +9,14 @@ public class PlayerSpawn : MonoBehaviour
     [field: SerializeField] public Color[] PlayerColors { get; private set; }
 
     [Header("Cameras (SimpleFollowCam on each display camera)")]
-    [SerializeField] SimpleFollowCam cam1; // Display 1 camera follow script
-    [SerializeField] SimpleFollowCam cam2; // Display 2 camera follow script
+    [SerializeField] SimpleFollowCam cam1;
+    [SerializeField] SimpleFollowCam cam2;
 
     [Header("UI (per display)")]
     [SerializeField] TMP_Text joinText1;
     [SerializeField] TMP_Text joinText2;
     [SerializeField] TMP_Text countdownText1;
     [SerializeField] TMP_Text countdownText2;
-
-    [Header("HUD (per display)")]
-    [SerializeField] ShipHUD hud1;
-    [SerializeField] ShipHUD hud2;
 
     [Header("Countdown")]
     [SerializeField] int requiredPlayers = 2;
@@ -30,48 +26,58 @@ public class PlayerSpawn : MonoBehaviour
     [SerializeField] AudioSource audioSource;
     [SerializeField] AudioClip beepClip;
 
+    [Header("Race")]
+    [SerializeField] RaceManager race;
+
     public int PlayerCount { get; private set; }
 
-    PlayerInput[] joined = new PlayerInput[4];
+    PlayerInput[] joined = new PlayerInput[2];
     bool countdownRunning;
 
     void Start()
     {
+        if (race == null) race = FindFirstObjectByType<RaceManager>();
         SetCountdownActive(false);
         UpdateJoinUI();
     }
 
     public void OnPlayerJoined(PlayerInput playerInput)
     {
+        if (!HasGamepad(playerInput))
+        {
+            Debug.Log($"Rejected join from non-gamepad device on {playerInput.gameObject.name}.");
+            Destroy(playerInput.gameObject);
+            return;
+        }
+
         int maxPlayerCount = Mathf.Min(
             SpawnPoints != null ? SpawnPoints.Length : 0,
             PlayerColors != null ? PlayerColors.Length : 0
         );
 
-        if (maxPlayerCount < 1)
+        if (maxPlayerCount < 2)
         {
-            Debug.LogError($"Assign SpawnPoints + PlayerColors on {name}.");
+            Debug.LogError($"Need at least 2 SpawnPoints and 2 PlayerColors on {name}.");
             Destroy(playerInput.gameObject);
             return;
         }
 
-        if (PlayerCount >= maxPlayerCount)
+        if (PlayerCount >= 2)
         {
-            Debug.Log($"Max players reached ({maxPlayerCount}). Destroying {playerInput.gameObject.name}.");
+            Debug.Log($"Already have 2 players. Destroying {playerInput.gameObject.name}.");
             Destroy(playerInput.gameObject);
             return;
         }
 
-        int slot = PlayerCount;      // 0 = P1, 1 = P2
+        int slot = PlayerCount; // 0=P1, 1=P2
         int playerNumber = slot + 1;
 
-        // Spawn position
-        playerInput.transform.SetPositionAndRotation(
-            SpawnPoints[slot].position,
-            SpawnPoints[slot].rotation
-        );
+        // Teleport safely (prevents Saturn shove / only-one-spawnpoint-works weirdness)
+        SafeTeleport(playerInput.gameObject, SpawnPoints[slot]);
 
-        // Your player setup
+        Debug.Log($"Spawned P{playerNumber} at {SpawnPoints[slot].position}");
+
+        // Color / setup
         var pc = playerInput.GetComponent<PlayerController>();
         if (pc != null)
         {
@@ -80,20 +86,24 @@ public class PlayerSpawn : MonoBehaviour
             pc.AssignColor(PlayerColors[slot]);
         }
 
-        // Freeze until countdown finishes
+        // Freeze movement until countdown ends
         var flight = playerInput.GetComponent<ShipControllerFlight>();
         if (flight != null) flight.enabled = false;
+
+        var dash = playerInput.GetComponent<ShipDash>();
+        if (dash != null) dash.enabled = false;
 
         joined[slot] = playerInput;
         PlayerCount++;
 
-        // Camera targets
+        // Camera target
         if (slot == 0 && cam1 != null) cam1.target = playerInput.transform;
         if (slot == 1 && cam2 != null) cam2.target = playerInput.transform;
 
-        // HUD binds
-        if (slot == 0 && hud1 != null) hud1.Bind(playerInput.transform);
-        if (slot == 1 && hud2 != null) hud2.Bind(playerInput.transform);
+        // Register to race manager
+        var ship = playerInput.GetComponent<RaceShip>();
+        if (ship == null) ship = playerInput.gameObject.AddComponent<RaceShip>();
+        if (race != null) race.RegisterShip(ship, slot);
 
         UpdateJoinUI();
 
@@ -118,43 +128,80 @@ public class PlayerSpawn : MonoBehaviour
 
         SetCountdownText("GO!");
 
-        for (int i = 0; i < requiredPlayers; i++)
+        for (int i = 0; i < 2; i++)
         {
             if (joined[i] == null) continue;
+
             var flight = joined[i].GetComponent<ShipControllerFlight>();
             if (flight != null) flight.enabled = true;
+
+            var dash = joined[i].GetComponent<ShipDash>();
+            if (dash != null) dash.enabled = true;
         }
+
+        // start race + music
+        if (race != null) race.StartRace();
 
         yield return new WaitForSeconds(0.6f);
         SetCountdownActive(false);
         UpdateJoinUI();
     }
 
-    public void OnPlayerLeft(PlayerInput playerInput)
+    void SafeTeleport(GameObject shipObj, Transform spawn)
     {
-        Debug.Log("Player left...");
+        if (shipObj == null || spawn == null) return;
 
-        for (int i = 0; i < joined.Length; i++)
-            if (joined[i] == playerInput) joined[i] = null;
+        // disable colliders for a frame so physics doesn't shove you inside Saturn
+        var cols = shipObj.GetComponentsInChildren<Collider>(true);
+        for (int i = 0; i < cols.Length; i++) cols[i].enabled = false;
 
-        countdownRunning = false;
-        PlayerCount = Mathf.Max(0, PlayerCount - 1);
+        shipObj.transform.SetPositionAndRotation(spawn.position, spawn.rotation);
 
-        SetCountdownActive(false);
-        UpdateJoinUI();
+        var rb = shipObj.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+#if UNITY_6000_0_OR_NEWER
+            rb.linearVelocity = Vector3.zero;
+#else
+            rb.velocity = Vector3.zero;
+#endif
+            rb.angularVelocity = Vector3.zero;
+        }
+
+        StartCoroutine(ReenableCollidersNextFrame(cols));
+    }
+
+    IEnumerator ReenableCollidersNextFrame(Collider[] cols)
+    {
+        yield return null;
+        for (int i = 0; i < cols.Length; i++)
+            if (cols[i] != null) cols[i].enabled = true;
+    }
+
+    bool HasGamepad(PlayerInput input)
+    {
+        foreach (var d in input.devices)
+            if (d is Gamepad) return true;
+        return false;
     }
 
     void UpdateJoinUI()
     {
-        if (PlayerCount <= 0) SetJoinText("Player 1: Press X (any button) to join");
-        else if (PlayerCount == 1) SetJoinText("Player 2: Press X (any button) to join");
-        else SetJoinText("Both players joined! Get ready...");
-    }
-
-    void SetJoinText(string msg)
-    {
-        if (joinText1) joinText1.text = msg;
-        if (joinText2) joinText2.text = msg;
+        if (PlayerCount <= 0)
+        {
+            if (joinText1) joinText1.text = "P1: Press any button to join";
+            if (joinText2) joinText2.text = "Waiting for P1...";
+        }
+        else if (PlayerCount == 1)
+        {
+            if (joinText1) joinText1.text = "P1 joined ✅  Waiting for P2...";
+            if (joinText2) joinText2.text = "P2: Press any button to join";
+        }
+        else
+        {
+            if (joinText1) joinText1.text = "Both players joined!";
+            if (joinText2) joinText2.text = "Both players joined!";
+        }
     }
 
     void SetCountdownText(string msg)

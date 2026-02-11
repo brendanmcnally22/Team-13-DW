@@ -1,121 +1,150 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class RaceManager : MonoBehaviour
 {
-    [Header("Spawn")]
-    [SerializeField] GameObject playerPrefab;        // your ShipPrefab (must have PlayerInput)
-    [SerializeField] Transform[] spawnPoints;        // size 2
-    [SerializeField] Color[] playerColors;           // size 2
+    [Header("UI (per display)")]
+    [SerializeField] TMP_Text resultText1;
+    [SerializeField] TMP_Text resultText2;
 
-    [Header("UI")]
-    [SerializeField] TMP_Text countdownText;         // on Display1 canvas or a shared canvas
-    [SerializeField] TMP_Text statusText;            // optional
+    [Header("Finish Rules")]
+    [SerializeField] float endDelayAfterFirstFinish = 10f;
 
-    [Header("Audio")]
-    [SerializeField] AudioSource audioSource;
-    [SerializeField] AudioClip beepClip;
+    [Header("Music")]
+    [SerializeField] AudioSource musicSource;
+    [SerializeField] AudioClip raceMusic;
+    [SerializeField] bool loopMusic = true;
 
-    [Header("Start")]
-    [SerializeField] float preRaceCountdown = 5f;    // total seconds (you asked >=5)
+    RaceShip[] ships = new RaceShip[2];
 
-    PlayerInput[] players = new PlayerInput[2];
+    bool raceStarted;
+    bool firstFinishHappened;
+    int firstFinisherSlot = -1;
+    Coroutine endRoutine;
 
-    public void PressPlay()
+    public void RegisterShip(RaceShip ship, int slot)
     {
-        // basic safety checks
-        if (playerPrefab == null || spawnPoints.Length < 2 || playerColors.Length < 2)
+        if (slot < 0 || slot > 1) return;
+        ships[slot] = ship;
+        ship.Init(slot);
+    }
+
+    public void StartRace()
+    {
+        if (raceStarted) return;
+        raceStarted = true;
+
+        SetResult(0, "");
+        SetResult(1, "");
+
+        if (musicSource != null && raceMusic != null)
         {
-            Debug.LogError("RaceManager: assign playerPrefab, 2 spawnPoints, 2 playerColors.");
-            return;
+            musicSource.clip = raceMusic;
+            musicSource.loop = loopMusic;
+            musicSource.Play();
+        }
+    }
+
+    public void PlayerCrossedFinish(RaceShip ship)
+    {
+        if (!raceStarted) return;
+        if (ship == null) return;
+        if (ship.Finished) return;
+
+        int slot = ship.Slot;
+
+        // first finisher decides winner
+        if (!firstFinishHappened)
+        {
+            firstFinishHappened = true;
+            firstFinisherSlot = slot;
+
+            ship.MarkFinished(true);
+            SetResult(slot, "YOU WON!");
+
+            // other player is not finished yet
+            int other = 1 - slot;
+            if (ships[other] != null && !ships[other].Finished)
+                SetResult(other, "HURRY UP! (10s)");
+
+            if (endRoutine != null) StopCoroutine(endRoutine);
+            endRoutine = StartCoroutine(EndAfterDelay());
+        }
+        else
+        {
+            // second finisher
+            ship.MarkFinished(false);
+            SetResult(slot, "YOU LOST!");
+        }
+    }
+
+    IEnumerator EndAfterDelay()
+    {
+        float t = endDelayAfterFirstFinish;
+
+        while (t > 0f)
+        {
+            // optional: show countdown on loser screen
+            int loserSlot = 1 - firstFinisherSlot;
+            if (ships[loserSlot] != null && !ships[loserSlot].Finished)
+                SetResult(loserSlot, $"FINISH! ({Mathf.CeilToInt(t)}s)");
+
+            t -= Time.deltaTime;
+            yield return null;
         }
 
-        // find two controllers
-        var pads = Gamepad.all;
-        if (pads.Count < 2)
+        // if loser didn’t finish in time, mark them lost
+        int other = 1 - firstFinisherSlot;
+        if (ships[other] != null && !ships[other].Finished)
         {
-            if (statusText) statusText.text = "Need 2 controllers connected.";
-            Debug.LogWarning("RaceManager: Need 2 gamepads connected.");
-            return;
+            ships[other].MarkFinished(false);
+            SetResult(other, "YOU LOST!");
         }
 
-        // if you press play twice, clean up old ships
-        CleanupOldPlayers();
+        FreezeAllShips();
+        StopMusic();
+    }
 
-        // spawn both players “at the same time”
-        for (int i = 0; i < 2; i++)
+    void FreezeAllShips()
+    {
+        for (int i = 0; i < ships.Length; i++)
         {
-            players[i] = PlayerInput.Instantiate(
-                playerPrefab,
-                playerIndex: i,
-                controlScheme: null,
-                splitScreenIndex: -1,
-                pairWithDevice: pads[i]
-            );
+            if (ships[i] == null) continue;
 
-            // move to spawn
-            players[i].transform.SetPositionAndRotation(spawnPoints[i].position, spawnPoints[i].rotation);
-
-            // assign your custom stuff (same logic as your PlayerSpawn)
-            var pc = players[i].GetComponent<PlayerController>();
-            if (pc != null)
-            {
-                pc.AssignPlayerInputDevice(players[i]);
-                pc.AssignPlayerNumber(i + 1);
-                pc.AssignColor(playerColors[i]);
-            }
-
-            // freeze movement until countdown finishes (does NOT modify your controller code)
-            var flight = players[i].GetComponent<ShipControllerFlight>();
+            var flight = ships[i].GetComponent<ShipControllerFlight>();
             if (flight != null) flight.enabled = false;
-        }
 
-        StartCoroutine(StartCountdownThenGo());
+            var dash = ships[i].GetComponent<ShipDash>();
+            if (dash != null) dash.enabled = false;
+
+            var rb = ships[i].GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+#if UNITY_6000_0_OR_NEWER
+                rb.linearVelocity = Vector3.zero;
+#else
+                rb.velocity = Vector3.zero;
+#endif
+                rb.angularVelocity = Vector3.zero;
+            }
+        }
     }
 
-    IEnumerator StartCountdownThenGo()
+    void StopMusic()
     {
-        if (countdownText) countdownText.gameObject.SetActive(true);
-
-        // 5..4..3..2..1 then GO
-        int seconds = Mathf.CeilToInt(preRaceCountdown);
-
-        for (int t = seconds; t >= 1; t--)
-        {
-            if (countdownText) countdownText.text = t.ToString();
-
-            // last 3 seconds = beep beep beep
-            if (t <= 3 && audioSource && beepClip)
-                audioSource.PlayOneShot(beepClip);
-
-            yield return new WaitForSeconds(1f);
-        }
-
-        if (countdownText) countdownText.text = "GO!";
-
-        // enable movement
-        for (int i = 0; i < players.Length; i++)
-        {
-            if (players[i] == null) continue;
-            var flight = players[i].GetComponent<ShipControllerFlight>();
-            if (flight != null) flight.enabled = true;
-        }
-
-        yield return new WaitForSeconds(0.6f);
-        if (countdownText) countdownText.gameObject.SetActive(false);
+        if (musicSource != null) musicSource.Stop();
     }
 
-    void CleanupOldPlayers()
+    void SetResult(int slot, string msg)
     {
-        // if you had old spawned ships
-        var existing = FindObjectsByType<PlayerInput>(FindObjectsSortMode.None);
-        foreach (var p in existing)
+        if (slot == 0)
         {
-            // only destroy ones that are using your prefab logic
-            if (p != null && p.gameObject.name.Contains(playerPrefab.name))
-                Destroy(p.gameObject);
+            if (resultText1) resultText1.text = msg;
+        }
+        else if (slot == 1)
+        {
+            if (resultText2) resultText2.text = msg;
         }
     }
 }
