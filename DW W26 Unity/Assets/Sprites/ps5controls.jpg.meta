@@ -96,27 +96,66 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: ps5controls_0
+      name: X
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1920
-        height: 1080
+        x: 760
+        y: 827
+        width: 109
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline:
+      - - {x: 960, y: 540}
+        - {x: -960, y: 540}
+        - {x: -960, y: -540}
+        - {x: 960, y: -540}
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9e9d3ecd4a9c37db0800000000000000
+      internalID: -4795267468301706775
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UpandDown
+      rect:
+        serializedVersion: 2
+        x: 757
+        y: 347
+        width: 105
+        height: 154
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 9e9d3ecd4a9c37db0800000000000000
-      internalID: -4795267468301706775
+      spriteID: e04da5d5b0210504c821b3ad2ec8ff24
+      internalID: -1504962061
       vertices: []
       indices: 
       edges: []
@@ -135,7 +174,8 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      ps5controls_0: -4795267468301706775
+      UpandDown: -1504962061
+      X: -4795267468301706775
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
