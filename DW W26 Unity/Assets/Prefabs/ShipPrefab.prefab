@@ -15,9 +15,12 @@ GameObject:
   - component: {fileID: 2708562649026150741}
   - component: {fileID: 1499590251449030136}
   - component: {fileID: 4662495879733800091}
-  - component: {fileID: 6777314587793881177}
   - component: {fileID: 7214294916636882648}
   - component: {fileID: 7673756998749247803}
+  - component: {fileID: -7436064741378305808}
+  - component: {fileID: 1112752000208251694}
+  - component: {fileID: -4564205883427636843}
+  - component: {fileID: -1168781103945595240}
   m_Layer: 3
   m_Name: ShipPrefab
   m_TagString: Player
@@ -88,10 +91,7 @@ MonoBehaviour:
   aimTransform: {fileID: 3641968969279354168}
   maxSpeed: 150
   acceleration: 95
-  brakePower: 35
-  throttleRampUp: 1.8
-  throttleRampDown: 3.5
-  hardStopStrength: 10
+  brakePower: 1
   lateralDamp: 4.5
   verticalDamp: 2
   yawRate: 1.4
@@ -111,11 +111,10 @@ MonoBehaviour:
   aimReturnSpeed: 4
   aimSteerStrength: 1
   aimPitchStrength: 1
-  maxRumble: 0.4
-  brakeRumble: 0.75
   rumbleSmooth: 15
-  throttleBurst: 0.9
-  burstDuration: 0.12
+  throttleBurstIntensity: 0.85
+  throttleBurstTime: 0.12
+  brakeRumbleIntensity: 0.75
   dashLateralDampMultiplier: 0.05
 --- !u!114 &1347986384396866640
 MonoBehaviour:
@@ -234,6 +233,10 @@ MonoBehaviour:
       m_Calls: []
     m_ActionId: 7574884e-48eb-46e2-80ec-8a88e234a5a9
     m_ActionName: 'Player/Reorient[/DualSenseGamepadHID/touchpadButton]'
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: cde2471e-3c19-4eca-a903-56c94af9085b
+    m_ActionName: 'Player/Boost[/DualSenseGamepadHID/buttonSouth]'
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: Gamepad
   m_DefaultActionMap: Player
@@ -291,21 +294,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1ee8dc709de4db43aec217072b6dacc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &6777314587793881177
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 221812434454255184}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 968449e61cd7e9d48b48c451919470df, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  slowMultiplier: 0.85
-  pushBack: 1.8
-  hitCooldown: 0.08
 --- !u!114 &7214294916636882648
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -336,10 +324,78 @@ MonoBehaviour:
   - {fileID: 8527750547631506162}
   - {fileID: 7457160703630524609}
   idleIntensity: 1
-  maxIntensity: 8
+  maxIntensity: 10
   idleRange: 6
-  maxRange: 14
+  maxRange: 17
   smooth: 12
+--- !u!114 &-7436064741378305808
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 221812434454255184}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8aa5e7fef08c4c744af75a9bd9cda424, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1112752000208251694
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 221812434454255184}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 470206a2058d5944a9656d03eabd2c94, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerInput: {fileID: 1347986384396866640}
+  minImpact: 2
+  maxImpact: 15
+  rumbleDuration: 0.15
+--- !u!114 &-4564205883427636843
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 221812434454255184}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f79e29036779771449c3b26064296d74, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerInput: {fileID: 1347986384396866640}
+  boostActionName: Boost
+  boostAccel: 25
+  maxFuel: 3
+  drainPerSecond: 1
+  regenPerSecond: 0.5
+--- !u!114 &-1168781103945595240
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 221812434454255184}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a65f86a1bc164ce43bb5358d1e0c6ea4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerInput: {fileID: 1347986384396866640}
+  throttleFloatAction: Throttle
+  moveVectorAction: Move
+  src: {fileID: 0}
+  thrusterLoop: {fileID: 8300000, guid: 525c439292c8be348a95d671d7eccfa0, type: 3}
+  minVol: 0.05
+  maxVol: 0.9
+  minPitch: 0.85
+  maxPitch: 1.25
+  smooth: 10
 --- !u!1 &3634249750757638536
 GameObject:
   m_ObjectHideFlags: 0
