@@ -23,10 +23,15 @@ public class PlayerSpawn : MonoBehaviour
     [Header("Countdown")]
     [SerializeField] int requiredPlayers = 2;
     [SerializeField] int countdownSeconds = 5;
+    [SerializeField] float delayBeforeCountdown = 2f; // <- THIS is the delay you wanted
 
     [Header("Beep")]
     [SerializeField] AudioSource audioSource;
     [SerializeField] AudioClip beepClip;
+
+    [Header("Shared Announcer (intro only)")]
+    [SerializeField] AudioSource sharedAnnouncerSource; // scene AudioSource
+    [SerializeField] AudioClip sharedIntroClip;         // "going around saturn..." etc
 
     [Header("Race")]
     [SerializeField] RaceManager race;
@@ -40,26 +45,28 @@ public class PlayerSpawn : MonoBehaviour
     [SerializeField] bool preventBackwardProgress = true;
 
     [Header("Throttle UI (reads input, NOT speed)")]
-    [SerializeField] string throttleFloatAction = "Throttle"; // preferred float action
-    [SerializeField] string moveVectorAction = "Move";        // fallback Vector2
+    [SerializeField] string throttleFloatAction = "Throttle";
+    [SerializeField] string moveVectorAction = "Move";
     [SerializeField] bool invertThrottle = false;
 
     public int PlayerCount { get; private set; }
 
     PlayerInput[] joined = new PlayerInput[2];
     bool countdownRunning;
+    bool introPlayed;
 
     void Start()
     {
         var allSpawners = FindObjectsByType<PlayerSpawn>(FindObjectsSortMode.None);
         if (allSpawners.Length > 1)
-            Debug.LogWarning($"WARNING: There are {allSpawners.Length} PlayerSpawn objects in the scene.");
+            Debug.LogWarning($"WARNING: There are {allSpawners.Length} PlayerSpawn objects in the scene. That can cause weird stuff.");
 
         if (race == null) race = FindFirstObjectByType<RaceManager>();
         if (racePositionUI == null) racePositionUI = FindFirstObjectByType<RacePositionUI>();
 
         SetCountdownActive(false);
         countdownRunning = false;
+        introPlayed = false;
 
         ValidateSetup();
         UpdateJoinUI();
@@ -67,7 +74,7 @@ public class PlayerSpawn : MonoBehaviour
 
     void Update()
     {
-        // throttle sliders per player (each uses its own PlayerInput + its own ShipHUD slot)
+        // throttle sliders per player (each uses its own PlayerInput + ShipHUD slot)
         for (int slot = 0; slot < 2; slot++)
         {
             var pi = joined[slot];
@@ -90,7 +97,7 @@ public class PlayerSpawn : MonoBehaviour
         var a = pi.actions.FindAction(throttleFloatAction, false);
         if (a != null)
         {
-            float raw = a.ReadValue<float>();     // could be 0..1 or -1..1
+            float raw = a.ReadValue<float>(); // could be 0..1 or -1..1
             return Mathf.InverseLerp(-1f, 1f, raw);
         }
 
@@ -115,6 +122,8 @@ public class PlayerSpawn : MonoBehaviour
 
     public void OnPlayerJoined(PlayerInput playerInput)
     {
+        Debug.Log($"[PlayerSpawn] OnPlayerJoined fired: {playerInput.gameObject.name} | playerIndex={playerInput.playerIndex}");
+
         if (!HasGamepad(playerInput))
         {
             Debug.Log($"Rejected join from non-gamepad device on {playerInput.gameObject.name}.");
@@ -144,17 +153,20 @@ public class PlayerSpawn : MonoBehaviour
 
         int playerNumber = slot + 1;
 
+        // freeze movement until countdown ends (do it before force-spawn)
         var flight = playerInput.GetComponent<ShipControllerFlight>();
         if (flight != null) flight.enabled = false;
 
         var dash = playerInput.GetComponent<ShipDash>();
         if (dash != null) dash.enabled = false;
 
+        // Force spawn HARD
         if (SpawnPoints[slot] != null)
             StartCoroutine(ForceSpawnRoutine(playerInput, SpawnPoints[slot]));
         else
             Debug.LogError($"SpawnPoints[{slot}] is NULL. Fix inspector.");
 
+        // Color / setup
         var pc = playerInput.GetComponent<PlayerController>();
         if (pc != null)
         {
@@ -166,14 +178,16 @@ public class PlayerSpawn : MonoBehaviour
         joined[slot] = playerInput;
         PlayerCount = CountJoined();
 
+        // Camera targets
         if (slot == 0 && cam1 != null) cam1.target = playerInput.transform;
         if (slot == 1 && cam2 != null) cam2.target = playerInput.transform;
 
+        // Register to race manager
         var ship = playerInput.GetComponent<RaceShip>();
         if (ship == null) ship = playerInput.gameObject.AddComponent<RaceShip>();
         if (race != null) race.RegisterShip(ship, slot);
 
-        // Configure tracker + link to RacePositionUI (no inspector dragging)
+        // Configure progress tracker + wire to UI
         var tracker = playerInput.GetComponent<CircularProgressTracker>();
         if (tracker == null) tracker = playerInput.gameObject.AddComponent<CircularProgressTracker>();
 
@@ -182,7 +196,12 @@ public class PlayerSpawn : MonoBehaviour
         if (racePositionUI != null)
             racePositionUI.AssignTracker(slot, tracker);
 
-        // Boost script gets its slot so it updates the correct boost slider
+        // Wire per-player announcer (spawned at runtime so inspector refs won't magically work)
+        var ann = playerInput.GetComponentInChildren<PlayerAnnouncer>(true);
+        if (racePositionUI != null && ann != null)
+            racePositionUI.AssignAnnouncer(slot, ann);
+
+        // Boost slot (so it writes to the right HUD)
         var boost = playerInput.GetComponent<HoldBoostSystem>();
         if (boost != null) boost.SetSlot(slot);
 
@@ -196,7 +215,21 @@ public class PlayerSpawn : MonoBehaviour
     {
         countdownRunning = true;
         SetCountdownActive(true);
+
+        // show "THE RACE STARTS IN" immediately, countdown numbers are below
         UpdateJoinUI();
+        SetCountdownText("");
+
+        // play shared intro ONCE when countdown begins
+        if (!introPlayed && sharedAnnouncerSource != null && sharedIntroClip != null)
+        {
+            introPlayed = true;
+            sharedAnnouncerSource.PlayOneShot(sharedIntroClip);
+        }
+
+        // ✅ actual delay before countdown numbers start
+        if (delayBeforeCountdown > 0f)
+            yield return new WaitForSeconds(delayBeforeCountdown);
 
         for (int t = countdownSeconds; t >= 1; t--)
         {
@@ -210,6 +243,7 @@ public class PlayerSpawn : MonoBehaviour
 
         SetCountdownText("GO!");
 
+        // enable player scripts
         for (int i = 0; i < 2; i++)
         {
             if (joined[i] == null) continue;
@@ -268,6 +302,8 @@ public class PlayerSpawn : MonoBehaviour
         if (countdownText1) countdownText1.gameObject.SetActive(on);
         if (countdownText2) countdownText2.gameObject.SetActive(on);
     }
+
+    // --- spawn forcing ---
 
     IEnumerator ForceSpawnRoutine(PlayerInput playerInput, Transform spawn)
     {
@@ -332,6 +368,8 @@ public class PlayerSpawn : MonoBehaviour
 
         Physics.SyncTransforms();
     }
+
+    // --- helpers ---
 
     int GetNextFreeSlot()
     {
