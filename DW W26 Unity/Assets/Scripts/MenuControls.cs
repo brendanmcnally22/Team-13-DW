@@ -4,6 +4,7 @@ using UnityEngine.InputSystem;
 public class MenuControls : MonoBehaviour
 {
     public float selection;
+    bool ControlTutorialUp = false;
     bool buttonDown;
     [Space(10)]
     [Header("Start")]
@@ -17,6 +18,11 @@ public class MenuControls : MonoBehaviour
     [Header("Quit")]
     public GameObject QuitSprite;
     public GameObject QuitSelected;
+    [Space(10)]
+    [Header("Controls Screen")]
+    public GameObject ControlTutorial1;
+    public GameObject ControlTutorial2;
+    public GameObject ControlsMainMenu;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -27,38 +33,50 @@ public class MenuControls : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        float verticalInput = Input.GetAxis("Vertical");
-        if (verticalInput == 0)
+        if (ControlTutorialUp == false)
         {
-            buttonDown = false;
+            ControlTutorial1.SetActive(false);
+            ControlTutorial2.SetActive(false);
+            ControlsMainMenu.SetActive(true);
+            float verticalInput = Input.GetAxis("Vertical");
+            if (verticalInput == 0)
+            {
+                buttonDown = false;
+            }
+            // Go down
+            if (verticalInput < 0 && buttonDown == false)
+            {
+                if (selection <= 3)
+                {
+                    selection++;
+                }
+                // Loop back around
+                if (selection > 3)
+                {
+                    selection = 1;
+                }
+                buttonDown = true;
+            }
+            // Go up
+            if (verticalInput > 0 && buttonDown == false)
+            {
+                if (selection >= 1)
+                {
+                    selection--;
+                }
+                // Loop back around
+                if (selection < 1)
+                {
+                    selection = 3;
+                }
+                buttonDown = true;
+            }
         }
-        // Go down
-        if (verticalInput < 0 && buttonDown == false)
+        else
         {
-            if (selection <= 3)
-            {
-                selection++;
-            }
-            // Loop back around
-            if (selection > 3)
-            {
-                selection = 1;
-            }
-            buttonDown = true;
-        }
-        // Go up
-        if (verticalInput > 0 && buttonDown == false)
-        {
-            if (selection >= 1)
-            {
-                selection--;
-            }
-            // Loop back around
-            if (selection < 1)
-            {
-                selection = 3;
-            }
-            buttonDown = true;
+            ControlTutorial1.SetActive(true);
+            ControlTutorial2.SetActive(true);
+            ControlsMainMenu.SetActive(false);
         }
         // Start is Selected
         if (selection == 1)
@@ -70,7 +88,7 @@ public class MenuControls : MonoBehaviour
             QuitSprite.SetActive(true);
             QuitSelected.SetActive(false);
             // Start Race
-            if (Input.GetKeyDown(KeyCode.Space))
+            if (Input.GetButtonDown("Fire1"))
             {
                 SceneManager.LoadScene("Dual Monitor Scene");
             }
@@ -84,6 +102,10 @@ public class MenuControls : MonoBehaviour
             ControlsSelected.SetActive(true);
             QuitSprite.SetActive(true);
             QuitSelected.SetActive(false);
+            if (Input.GetButtonDown("Fire1"))
+            {
+                ControlTutorialUp = !ControlTutorialUp;
+            }
         }
         // Quit Selected
         if (selection == 3)

@@ -1,0 +1,546 @@
+fileFormatVersion: 2
+guid: afadf295f0dae7643bce1470d9832093
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 4747398793590180759
+    second: dualsense-controller-product-thumbnail-01-en-14sep21_0
+  - first:
+      213: 2347970338415854268
+    second: dualsense-controller-product-thumbnail-01-en-14sep21_1
+  - first:
+      213: -974539711044308579
+    second: dualsense-controller-product-thumbnail-01-en-14sep21_2
+  - first:
+      213: -6078558258923541587
+    second: dualsense-controller-product-thumbnail-01-en-14sep21_3
+  - first:
+      213: 4690331386690293665
+    second: dualsense-controller-product-thumbnail-01-en-14sep21_4
+  - first:
+      213: 2927373739720944526
+    second: dualsense-controller-product-thumbnail-01-en-14sep21_5
+  - first:
+      213: -5800325018538575863
+    second: dualsense-controller-product-thumbnail-01-en-14sep21_6
+  - first:
+      213: -2450861134303610566
+    second: dualsense-controller-product-thumbnail-01-en-14sep21_7
+  - first:
+      213: 1147950158780702803
+    second: dualsense-controller-product-thumbnail-01-en-14sep21_8
+  - first:
+      213: 2292387100507619536
+    second: dualsense-controller-product-thumbnail-01-en-14sep21_9
+  - first:
+      213: -6698870524668208765
+    second: dualsense-controller-product-thumbnail-01-en-14sep21_10
+  - first:
+      213: 327335252005360341
+    second: dualsense-controller-product-thumbnail-01-en-14sep21_11
+  - first:
+      213: -26527020835071828
+    second: dualsense-controller-product-thumbnail-01-en-14sep21_12
+  - first:
+      213: 8207787933992337450
+    second: dualsense-controller-product-thumbnail-01-en-14sep21_13
+  - first:
+      213: 7955250184835016844
+    second: dualsense-controller-product-thumbnail-01-en-14sep21_14
+  - first:
+      213: 5030582372736774298
+    second: dualsense-controller-product-thumbnail-01-en-14sep21_15
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: dualsense-controller-product-thumbnail-01-en-14sep21_0
+      rect:
+        serializedVersion: 2
+        x: 764
+        y: 1081
+        width: 77
+        height: 55
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 79b8f0bcc0622e140800000000000000
+      internalID: 4747398793590180759
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dualsense-controller-product-thumbnail-01-en-14sep21_1
+      rect:
+        serializedVersion: 2
+        x: 1128
+        y: 1073
+        width: 35
+        height: 72
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cb24e6c259aa59020800000000000000
+      internalID: 2347970338415854268
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dualsense-controller-product-thumbnail-01-en-14sep21_2
+      rect:
+        serializedVersion: 2
+        x: 144
+        y: 1008
+        width: 70
+        height: 59
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d9131bfcb4db972f0800000000000000
+      internalID: -974539711044308579
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dualsense-controller-product-thumbnail-01-en-14sep21_3
+      rect:
+        serializedVersion: 2
+        x: 147
+        y: 188
+        width: 1611
+        height: 891
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dab6856187f94aba0800000000000000
+      internalID: -6078558258923541587
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dualsense-controller-product-thumbnail-01-en-14sep21_4
+      rect:
+        serializedVersion: 2
+        x: 1695
+        y: 1016
+        width: 70
+        height: 59
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1af4a86bb87671140800000000000000
+      internalID: 4690331386690293665
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dualsense-controller-product-thumbnail-01-en-14sep21_5
+      rect:
+        serializedVersion: 2
+        x: 143
+        y: 854
+        width: 72
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e8bafd808ee10a820800000000000000
+      internalID: 2927373739720944526
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dualsense-controller-product-thumbnail-01-en-14sep21_6
+      rect:
+        serializedVersion: 2
+        x: 1694
+        y: 859
+        width: 72
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9087238802b118fa0800000000000000
+      internalID: -5800325018538575863
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dualsense-controller-product-thumbnail-01-en-14sep21_7
+      rect:
+        serializedVersion: 2
+        x: 68
+        y: 618
+        width: 77
+        height: 75
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a39b50898caccfdd0800000000000000
+      internalID: -2450861134303610566
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dualsense-controller-product-thumbnail-01-en-14sep21_8
+      rect:
+        serializedVersion: 2
+        x: 1759
+        y: 660
+        width: 67
+        height: 67
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3502af956965eef00800000000000000
+      internalID: 1147950158780702803
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dualsense-controller-product-thumbnail-01-en-14sep21_9
+      rect:
+        serializedVersion: 2
+        x: 1759
+        y: 551
+        width: 67
+        height: 67
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0d0c17d1ce130df10800000000000000
+      internalID: 2292387100507619536
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dualsense-controller-product-thumbnail-01-en-14sep21_10
+      rect:
+        serializedVersion: 2
+        x: 1759
+        y: 443
+        width: 67
+        height: 67
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 38911dcffb4d803a0800000000000000
+      internalID: -6698870524668208765
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dualsense-controller-product-thumbnail-01-en-14sep21_11
+      rect:
+        serializedVersion: 2
+        x: 1759
+        y: 339
+        width: 67
+        height: 67
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5d21e3a6dadea8400800000000000000
+      internalID: 327335252005360341
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dualsense-controller-product-thumbnail-01-en-14sep21_12
+      rect:
+        serializedVersion: 2
+        x: 679
+        y: 120
+        width: 70
+        height: 69
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ca81d2aa0d1c1aff0800000000000000
+      internalID: -26527020835071828
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dualsense-controller-product-thumbnail-01-en-14sep21_13
+      rect:
+        serializedVersion: 2
+        x: 765
+        y: 118
+        width: 70
+        height: 72
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a20c955a3abe7e170800000000000000
+      internalID: 8207787933992337450
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dualsense-controller-product-thumbnail-01-en-14sep21_14
+      rect:
+        serializedVersion: 2
+        x: 1155
+        y: 121
+        width: 70
+        height: 69
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c88a376f4e9b66e60800000000000000
+      internalID: 7955250184835016844
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dualsense-controller-product-thumbnail-01-en-14sep21_15
+      rect:
+        serializedVersion: 2
+        x: 1234
+        y: 119
+        width: 70
+        height: 72
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a90315cc30830d540800000000000000
+      internalID: 5030582372736774298
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      dualsense-controller-product-thumbnail-01-en-14sep21_0: 4747398793590180759
+      dualsense-controller-product-thumbnail-01-en-14sep21_1: 2347970338415854268
+      dualsense-controller-product-thumbnail-01-en-14sep21_10: -6698870524668208765
+      dualsense-controller-product-thumbnail-01-en-14sep21_11: 327335252005360341
+      dualsense-controller-product-thumbnail-01-en-14sep21_12: -26527020835071828
+      dualsense-controller-product-thumbnail-01-en-14sep21_13: 8207787933992337450
+      dualsense-controller-product-thumbnail-01-en-14sep21_14: 7955250184835016844
+      dualsense-controller-product-thumbnail-01-en-14sep21_15: 5030582372736774298
+      dualsense-controller-product-thumbnail-01-en-14sep21_2: -974539711044308579
+      dualsense-controller-product-thumbnail-01-en-14sep21_3: -6078558258923541587
+      dualsense-controller-product-thumbnail-01-en-14sep21_4: 4690331386690293665
+      dualsense-controller-product-thumbnail-01-en-14sep21_5: 2927373739720944526
+      dualsense-controller-product-thumbnail-01-en-14sep21_6: -5800325018538575863
+      dualsense-controller-product-thumbnail-01-en-14sep21_7: -2450861134303610566
+      dualsense-controller-product-thumbnail-01-en-14sep21_8: 1147950158780702803
+      dualsense-controller-product-thumbnail-01-en-14sep21_9: 2292387100507619536
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
