@@ -23,7 +23,7 @@ public class PlayerSpawn : MonoBehaviour
     [Header("Countdown")]
     [SerializeField] int requiredPlayers = 2;
     [SerializeField] int countdownSeconds = 5;
-    [SerializeField] float delayBeforeCountdown = 2f; // <- THIS is the delay you wanted
+    [SerializeField] float delayBeforeCountdown = 62f; // <- THIS is the delay you wanted
 
     [Header("Beep")]
     [SerializeField] AudioSource audioSource;

@@ -2310,14 +2310,17 @@ MonoBehaviour:
   countdownText2: {fileID: 1313384551}
   requiredPlayers: 2
   countdownSeconds: 5
+  delayBeforeCountdown: 2
   audioSource: {fileID: 1426336785}
   beepClip: {fileID: 8300000, guid: 525c439292c8be348a95d671d7eccfa0, type: 3}
+  sharedAnnouncerSource: {fileID: 0}
+  sharedIntroClip: {fileID: 0}
   race: {fileID: 1543384610}
   racePositionUI: {fileID: 1543384612}
   saturnCenter: {fileID: 362105101}
   ringPlane: {fileID: 2091307889}
   startLineRef: {fileID: 1354490637}
-  clockwise: 0
+  clockwise: 1
   preventBackwardProgress: 1
   throttleFloatAction: Throttle
   moveVectorAction: Move
@@ -4010,6 +4013,7 @@ GameObject:
   - component: {fileID: 1543384611}
   - component: {fileID: 1543384610}
   - component: {fileID: 1543384612}
+  - component: {fileID: 1543384613}
   m_Layer: 0
   m_Name: RaceManager
   m_TagString: Untagged
@@ -4066,10 +4070,29 @@ MonoBehaviour:
   p2: {fileID: 0}
   p1PlaceText: {fileID: 1745850859}
   p2PlaceText: {fileID: 619322977}
-  p1Announcer: {fileID: 0}
-  p2Announcer: {fileID: 0}
-  firstClip: {fileID: 0}
-  secondClip: {fileID: 0}
+  p1Announcer: {fileID: 1543384613}
+  p2Announcer: {fileID: 1543384613}
+  firstClip: {fileID: 8300000, guid: 525c439292c8be348a95d671d7eccfa0, type: 3}
+  secondClip: {fileID: 8300000, guid: 525c439292c8be348a95d671d7eccfa0, type: 3}
+  leadDeadzoneTurns: 0.01
+--- !u!114 &1543384613
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1543384609}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed3021aca3337e64bb47f4885dbfddb6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  src: {fileID: 658245448}
+  asteroidHitLines:
+  - {fileID: 8300000, guid: 525c439292c8be348a95d671d7eccfa0, type: 3}
+  - {fileID: 8300000, guid: 525c439292c8be348a95d671d7eccfa0, type: 3}
+  - {fileID: 0}
+  hitCooldown: 0.8
 --- !u!1 &1553184114
 GameObject:
   m_ObjectHideFlags: 0
@@ -4204,8 +4227,8 @@ MonoBehaviour:
   - {fileID: 8003914508875383451, guid: 205c965ad7ca82840922639f8610fb43, type: 3}
   - {fileID: 5031364142465689177, guid: 80aad8414df23634f84f07de5ac6b440, type: 3}
   - {fileID: 2433741432215076360, guid: fc5709109651e124b9b1b6d15fd9cd8d, type: 3}
-  asteroidCount: 1500
-  randomScale: {x: 1.2, y: 2.1}
+  asteroidCount: 3000
+  randomScale: {x: 1.5, y: 2.1}
   randomRotation: 1
   degreesPerSecond: 5
   seed: 0
