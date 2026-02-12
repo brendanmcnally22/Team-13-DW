@@ -3,17 +3,38 @@ using UnityEngine.UI;
 
 public class BoostMeterSprites : MonoBehaviour
 {
-    [SerializeField] Image meterImage;
+    [SerializeField] Image img;
 
-    [Tooltip("0 = empty, last = full")]
-    [SerializeField] Sprite[] levelSprites;
+    [Tooltip("Order must be EMPTY -> FULL (boost_0, boost_1, ... boost_full)")]
+    [SerializeField] Sprite[] frames;
 
-    public void SetBoost01(float t)
+    [Tooltip("If true, only changes when crossing frame thresholds (classic meter steps).")]
+    [SerializeField] bool stepped = true;
+
+    void Awake()
     {
-        if (!meterImage || levelSprites == null || levelSprites.Length == 0) return;
+        if (!img) img = GetComponent<Image>();
+    }
 
-        int idx = Mathf.RoundToInt(t * (levelSprites.Length - 1));
-        idx = Mathf.Clamp(idx, 0, levelSprites.Length - 1);
-        meterImage.sprite = levelSprites[idx];
+    public void Set01(float t01)
+    {
+        if (!img || frames == null || frames.Length == 0) return;
+
+        t01 = Mathf.Clamp01(t01);
+
+        int idx;
+        if (stepped)
+        {
+            // 5 frames => changes at 0.2, 0.4, 0.6, 0.8
+            idx = Mathf.FloorToInt(t01 * frames.Length);
+        }
+        else
+        {
+            // slightly “more responsive” with few frames
+            idx = Mathf.RoundToInt(t01 * (frames.Length - 1));
+        }
+
+        idx = Mathf.Clamp(idx, 0, frames.Length - 1);
+        img.sprite = frames[idx];
     }
 }

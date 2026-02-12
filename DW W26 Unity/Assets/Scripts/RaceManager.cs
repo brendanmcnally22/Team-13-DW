@@ -1,3 +1,4 @@
+﻿using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
@@ -8,6 +9,9 @@ public class RaceManager : MonoBehaviour
 
     public bool RaceStarted => raceStarted;
     public bool RaceActive => raceStarted && !raceEnded;
+    public bool RaceEnded => raceEnded;
+
+    public event Action OnRaceEnded;
 
     [Header("UI (per display)")]
     [SerializeField] TMP_Text resultText1;
@@ -15,6 +19,10 @@ public class RaceManager : MonoBehaviour
 
     [Header("Finish Rules")]
     [SerializeField] float endDelayAfterFirstFinish = 10f;
+
+    [Header("Restart Popup (HUD)")]
+    [SerializeField] bool showRestartPopupAtEnd = true;
+    [SerializeField] string restartPopupMessage = "HOLD △ TO RESTART";
 
     [Header("Music")]
     [SerializeField] AudioSource musicSource;
@@ -31,6 +39,13 @@ public class RaceManager : MonoBehaviour
 
     void Awake()
     {
+        // safer singleton (prevents weird double state)
+        if (Instance != null && Instance != this)
+        {
+            Debug.LogWarning("Duplicate RaceManager found and destroyed.", this);
+            Destroy(gameObject);
+            return;
+        }
         Instance = this;
     }
 
@@ -53,6 +68,13 @@ public class RaceManager : MonoBehaviour
 
         SetResult(0, "");
         SetResult(1, "");
+
+        // hide restart popup when race starts
+        if (showRestartPopupAtEnd)
+        {
+            ShipHUD.Get(0)?.ShowRestartPopup(false);
+            ShipHUD.Get(1)?.ShowRestartPopup(false);
+        }
 
         if (musicSource != null && raceMusic != null)
         {
@@ -82,7 +104,7 @@ public class RaceManager : MonoBehaviour
             // other player is not finished yet
             int other = 1 - slot;
             if (ships[other] != null && !ships[other].Finished)
-                SetResult(other, "HURRY UP! (10s)");
+                SetResult(other, $"HURRY UP! ({Mathf.CeilToInt(endDelayAfterFirstFinish)}s)");
 
             if (endRoutine != null) StopCoroutine(endRoutine);
             endRoutine = StartCoroutine(EndAfterDelay());
@@ -110,7 +132,7 @@ public class RaceManager : MonoBehaviour
             yield return null;
         }
 
-        // if loser didn�t finish in time, mark them lost
+        // if loser didn’t finish in time, mark them lost
         int other = 1 - firstFinisherSlot;
         if (ships[other] != null && !ships[other].Finished)
         {
@@ -120,7 +142,17 @@ public class RaceManager : MonoBehaviour
 
         FreezeAllShips();
         StopMusic();
+
         raceEnded = true;
+
+        // show restart popup on both displays
+        if (showRestartPopupAtEnd)
+        {
+            ShipHUD.Get(0)?.ShowRestartPopup(true, restartPopupMessage);
+            ShipHUD.Get(1)?.ShowRestartPopup(true, restartPopupMessage);
+        }
+
+        OnRaceEnded?.Invoke();
     }
 
     void FreezeAllShips()
@@ -138,7 +170,8 @@ public class RaceManager : MonoBehaviour
             var boost = ships[i].GetComponent<HoldBoostSystem>();
             if (boost != null) boost.enabled = false;
 
-            var rb = ships[i].GetComponent<Rigidbody>();
+            // ✅ safer: RB is often on a child
+            var rb = ships[i].GetComponentInChildren<Rigidbody>(true);
             if (rb != null)
             {
 #if UNITY_6000_0_OR_NEWER

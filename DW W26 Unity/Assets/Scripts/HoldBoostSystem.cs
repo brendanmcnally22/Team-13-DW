@@ -8,22 +8,26 @@ public class HoldBoostSystem : MonoBehaviour
     [SerializeField] string boostActionName = "Boost"; // bind to X (buttonSouth)
 
     [Header("Boost feel")]
-    [SerializeField] float boostAccel = 25f; // extra accel while held
+    [SerializeField] float boostAccel = 25f;
     [SerializeField] float maxFuel = 3.0f;   // seconds of boost
     [SerializeField] float drainPerSecond = 1.0f;
     [SerializeField] float regenPerSecond = 0.5f;
+
+    [Header("Lockout")]
+    [Tooltip("When fuel hits 0, boost is locked until it regens back to FULL.")]
+    [SerializeField] bool lockUntilFullAfterEmpty = true;
 
     [Header("Debug")]
     [SerializeField] bool logIfMissingAction = true;
 
     Rigidbody rb;
     InputAction boostAction;
-    float fuel;
+
+    [SerializeField] float fuel; // visible in inspector
+    bool emptyLock;              // true when we hit 0 and must regen to full
 
     int slot = -1;
     public void SetSlot(int s) => slot = s;
-
-    bool canBoost; // becomes true ONLY after GO
 
     void Awake()
     {
@@ -33,29 +37,11 @@ public class HoldBoostSystem : MonoBehaviour
         if (rb == null) rb = GetComponent<Rigidbody>();
 
         fuel = maxFuel;
-        canBoost = false;
-
-        UpdateHUD(false); // show full meter right away
     }
 
     void OnEnable()
     {
-        PlayerSpawn.OnRaceStarted += HandleRaceStarted;
-        canBoost = (RaceManager.Instance != null && RaceManager.Instance.RaceActive);
-
         RefreshAction();
-        UpdateHUD(false);
-    }
-
-    void OnDisable()
-    {
-        PlayerSpawn.OnRaceStarted -= HandleRaceStarted;
-    }
-
-    void HandleRaceStarted()
-    {
-        // GO moment
-        canBoost = true;
     }
 
     void RefreshAction()
@@ -63,6 +49,7 @@ public class HoldBoostSystem : MonoBehaviour
         if (playerInput == null || playerInput.actions == null) return;
 
         boostAction = playerInput.actions.FindAction(boostActionName, false);
+
         if (boostAction != null && !boostAction.enabled)
             boostAction.Enable();
 
@@ -74,35 +61,46 @@ public class HoldBoostSystem : MonoBehaviour
     {
         if (rb == null) return;
 
-        // if action didn't exist at OnEnable (map swap etc), try again
         if (boostAction == null) RefreshAction();
 
-        // HARD GATE: no boost before race starts
-        if (!canBoost || (RaceManager.Instance != null && !RaceManager.Instance.RaceActive))
+        // If race isn't active, don't allow boosting (still regen fuel + update UI)
+        bool raceAllowsBoost = true;
+        if (RaceManager.Instance != null && !RaceManager.Instance.RaceActive)
+            raceAllowsBoost = false;
+
+        bool inputHeld = false;
+        if (raceAllowsBoost && boostAction != null)
         {
-            // still regen + keep UI nice
-            fuel += regenPerSecond * Time.fixedDeltaTime;
-            fuel = Mathf.Clamp(fuel, 0f, maxFuel);
-            UpdateHUD(false);
-            return;
-        }
+            // Button action
+            inputHeld = boostAction.IsPressed();
 
-        bool boosting = false;
-
-        if (boostAction != null)
-        {
-            boosting = boostAction.IsPressed();
-
-            // fallback for float actions
-            if (!boosting)
+            // In case it’s float-based
+            if (!inputHeld)
             {
                 float v = 0f;
                 try { v = boostAction.ReadValue<float>(); } catch { }
-                boosting = v > 0.5f;
+                inputHeld = v > 0.5f;
             }
         }
 
-        if (boosting && fuel > 0f)
+        // Lockout logic:
+        // If we hit 0 fuel, lock until fuel returns to full.
+        if (lockUntilFullAfterEmpty)
+        {
+            if (!emptyLock && fuel <= 0f)
+                emptyLock = true;
+
+            if (emptyLock && fuel >= maxFuel)
+                emptyLock = false;
+        }
+        else
+        {
+            emptyLock = false;
+        }
+
+        bool canBoost = inputHeld && fuel > 0f && !emptyLock;
+
+        if (canBoost)
         {
             Vector3 dir = rb.transform.forward;
             rb.AddForce(dir * boostAccel, ForceMode.Acceleration);
@@ -115,23 +113,18 @@ public class HoldBoostSystem : MonoBehaviour
         }
 
         fuel = Mathf.Clamp(fuel, 0f, maxFuel);
-        UpdateHUD(boosting && fuel > 0f);
-    }
 
-    void UpdateHUD(bool boostActive)
-    {
+        // Update HUD
         int useSlot = (slot >= 0) ? slot : (playerInput != null ? playerInput.playerIndex : -1);
         var hud = ShipHUD.Get(useSlot);
-        if (hud == null) return;
 
         float norm = (maxFuel <= 0f) ? 0f : fuel / maxFuel;
 
-        // NEW sprite meter + flame anim
-        hud.SetBoost01(norm);
-        hud.SetBoostActive(boostActive);
-
-        // Legacy slider support (optional, safe to delete slider later)
-        if (hud.boostSlider != null)
-            hud.boostSlider.value = norm;
+        if (hud != null)
+        {
+            hud.SetBoost01(norm);
+            // Flame only while actively boosting (not when locked / empty)
+            hud.SetBoostActive(canBoost);
+        }
     }
 }

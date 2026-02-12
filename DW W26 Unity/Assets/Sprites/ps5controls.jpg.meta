@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: c2665e75ae2ebbb4ba1d0628f032e641
+guid: 61172e5315d281e4c82051be679094a6
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -5059362948469468460
-    second: Head_Neck_0
+      213: -4795267468301706775
+    second: ps5controls_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Head_Neck_0
+      name: ps5controls_0
       rect:
         serializedVersion: 2
-        x: 111
-        y: 93
-        width: 53
-        height: 116
+        x: 0
+        y: 0
+        width: 1920
+        height: 1080
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 4d254ba343889c9b0800000000000000
-      internalID: -5059362948469468460
+      spriteID: 9e9d3ecd4a9c37db0800000000000000
+      internalID: -4795267468301706775
       vertices: []
       indices: 
       edges: []
@@ -125,7 +125,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
+    spriteID: 04df33ae7b74a4848a00daa3f9d2a38d
     internalID: 0
     vertices: []
     indices: 
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Head_Neck_0: -5059362948469468460
+      ps5controls_0: -4795267468301706775
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

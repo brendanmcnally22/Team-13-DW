@@ -47,10 +47,14 @@ public class PlayerSpawn : MonoBehaviour
     [SerializeField] bool preventBackwardProgress = true;
 
     [Header("Throttle UI (reads INPUT, not speed)")]
-    [SerializeField] string throttleFloatAction = "Throttle"; // float if you have it
-    [SerializeField] string moveVectorAction = "Move";        // fallback Vector2
+    [SerializeField] string throttleFloatAction = "Throttle";
+    [SerializeField] string moveVectorAction = "Move";
     [SerializeField] bool invertThrottle = false;
-    [SerializeField] float throttleSmooth = 12f;              // higher = snappier
+    [SerializeField] float throttleSmooth = 12f;
+
+    [Header("Pre-Race Lock")]
+    [Tooltip("If true, ship colliders stay OFF until GO.")]
+    [SerializeField] bool disableShipCollidersUntilGo = true;
 
     public int PlayerCount { get; private set; }
 
@@ -169,9 +173,13 @@ public class PlayerSpawn : MonoBehaviour
         var dash = playerInput.GetComponent<ShipDash>();
         if (dash != null) dash.enabled = false;
 
-        // IMPORTANT: disable boost so it can't push ship during countdown
+        // disable boost so it can't push ship during countdown
         var boost = playerInput.GetComponent<HoldBoostSystem>();
         if (boost != null) boost.enabled = false;
+
+        // colliders OFF until GO (optional but you asked for it)
+        if (disableShipCollidersUntilGo)
+            SetShipColliders(playerInput, false);
 
         // Force spawn HARD
         if (SpawnPoints[slot] != null)
@@ -217,12 +225,12 @@ public class PlayerSpawn : MonoBehaviour
         // Boost slot so it updates the correct HUD
         if (boost != null) boost.SetSlot(slot);
 
-        // Bind per-player announcer to HUD (for talking animation)
+        // Bind per-player announcer to HUD (talk animation)
         var hud = ShipHUD.Get(slot);
         if (hud != null)
         {
             var ann = playerInput.GetComponentInChildren<PlayerAnnouncer>(true);
-          
+            if (ann != null) hud.BindAnnouncer(ann);
         }
 
         UpdateJoinUI();
@@ -241,7 +249,7 @@ public class PlayerSpawn : MonoBehaviour
         SetCountdownText("");
         UpdateJoinUI();
 
-        // --- play intro and WAIT for it to finish ---
+        // play intro and WAIT for it to finish
         if (!introPlayed && sharedAnnouncerSource != null && sharedIntroClip != null)
         {
             introPlayed = true;
@@ -251,18 +259,16 @@ public class PlayerSpawn : MonoBehaviour
             ShipHUD.Get(1)?.SetAnnouncerTalking(true);
 
             sharedAnnouncerSource.PlayOneShot(sharedIntroClip);
-
             yield return new WaitWhile(() => sharedAnnouncerSource != null && sharedAnnouncerSource.isPlaying);
 
             ShipHUD.Get(0)?.SetAnnouncerTalking(false);
             ShipHUD.Get(1)?.SetAnnouncerTalking(false);
         }
 
-        // extra breathing room
         if (extraDelayAfterIntro > 0f)
             yield return new WaitForSeconds(extraDelayAfterIntro);
 
-        // --- countdown ---
+        // countdown
         for (int t = countdownSeconds; t >= 1; t--)
         {
             SetCountdownText(t.ToString());
@@ -275,6 +281,16 @@ public class PlayerSpawn : MonoBehaviour
 
         SetCountdownText("GO!");
 
+        // ✅ colliders ON at GO (because we kept them OFF)
+        if (disableShipCollidersUntilGo)
+        {
+            for (int i = 0; i < 2; i++)
+            {
+                if (joined[i] == null) continue;
+                SetShipColliders(joined[i], true);
+            }
+        }
+
         // enable player scripts
         for (int i = 0; i < 2; i++)
         {
@@ -286,7 +302,7 @@ public class PlayerSpawn : MonoBehaviour
             var dash = joined[i].GetComponent<ShipDash>();
             if (dash != null) dash.enabled = true;
 
-            // enable boost NOW (so no pushing during countdown)
+            // enable boost NOW
             var boost = joined[i].GetComponent<HoldBoostSystem>();
             if (boost != null) boost.enabled = true;
         }
@@ -340,15 +356,23 @@ public class PlayerSpawn : MonoBehaviour
         if (countdownText2) countdownText2.gameObject.SetActive(on);
     }
 
-    // --- spawn forcing ---
+    // ----- Colliders helper -----
+    void SetShipColliders(PlayerInput pi, bool enabled)
+    {
+        if (pi == null) return;
 
+        var cols = pi.GetComponentsInChildren<Collider>(true);
+        for (int i = 0; i < cols.Length; i++)
+            if (cols[i] != null) cols[i].enabled = enabled;
+    }
+
+    // ----- Spawn forcing -----
     IEnumerator ForceSpawnRoutine(PlayerInput playerInput, Transform spawn)
     {
         var shipObj = playerInput.gameObject;
 
-        var cols = shipObj.GetComponentsInChildren<Collider>(true);
-        for (int i = 0; i < cols.Length; i++)
-            if (cols[i] != null) cols[i].enabled = false;
+        // keep colliders OFF (PlayerSpawn controls when they come back on)
+        // no re-enable at the end
 
         var rb = shipObj.GetComponentInChildren<Rigidbody>(true);
 
@@ -379,10 +403,6 @@ public class PlayerSpawn : MonoBehaviour
             rb.isKinematic = oldKinematic;
             rb.WakeUp();
         }
-
-        yield return null;
-        for (int i = 0; i < cols.Length; i++)
-            if (cols[i] != null) cols[i].enabled = true;
     }
 
     void HardSetPose(Transform shipRoot, Rigidbody rb, Transform spawn)
