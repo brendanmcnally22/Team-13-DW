@@ -21,7 +21,6 @@ public class MenuControls : MonoBehaviour
     [Space(10)]
     [Header("Controls Screen")]
     public GameObject ControlTutorial1;
-    public GameObject ControlTutorial2;
     public GameObject ControlsMainMenu;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -37,7 +36,7 @@ public class MenuControls : MonoBehaviour
         if (ControlTutorialUp == false)
         {
             ControlTutorial1.SetActive(false);
-            ControlTutorial2.SetActive(false);
+            
             ControlsMainMenu.SetActive(true);
             float verticalInput = Input.GetAxis("Vertical");
             if (verticalInput == 0)
@@ -77,7 +76,7 @@ public class MenuControls : MonoBehaviour
         else
         {
             ControlTutorial1.SetActive(true);
-            ControlTutorial2.SetActive(true);
+         
             ControlsMainMenu.SetActive(false);
         }
         // Start is Selected
