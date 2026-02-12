@@ -33,6 +33,7 @@ public class MenuControls : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        // Don't show controller tutorial and allow player to move
         if (ControlTutorialUp == false)
         {
             ControlTutorial1.SetActive(false);
@@ -72,6 +73,7 @@ public class MenuControls : MonoBehaviour
                 buttonDown = true;
             }
         }
+        // Show Controller Tutorial and don't allow main menu movement
         else
         {
             ControlTutorial1.SetActive(true);
@@ -102,6 +104,7 @@ public class MenuControls : MonoBehaviour
             ControlsSelected.SetActive(true);
             QuitSprite.SetActive(true);
             QuitSelected.SetActive(false);
+            // Show Controller Tutorial
             if (Input.GetButtonDown("Fire1"))
             {
                 ControlTutorialUp = !ControlTutorialUp;
