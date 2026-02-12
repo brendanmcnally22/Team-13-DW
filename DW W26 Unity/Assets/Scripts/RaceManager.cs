@@ -4,6 +4,11 @@ using UnityEngine;
 
 public class RaceManager : MonoBehaviour
 {
+    public static RaceManager Instance { get; private set; }
+
+    public bool RaceStarted => raceStarted;
+    public bool RaceActive => raceStarted && !raceEnded;
+
     [Header("UI (per display)")]
     [SerializeField] TMP_Text resultText1;
     [SerializeField] TMP_Text resultText2;
@@ -19,9 +24,15 @@ public class RaceManager : MonoBehaviour
     RaceShip[] ships = new RaceShip[2];
 
     bool raceStarted;
+    bool raceEnded;
     bool firstFinishHappened;
     int firstFinisherSlot = -1;
     Coroutine endRoutine;
+
+    void Awake()
+    {
+        Instance = this;
+    }
 
     public void RegisterShip(RaceShip ship, int slot)
     {
@@ -33,7 +44,12 @@ public class RaceManager : MonoBehaviour
     public void StartRace()
     {
         if (raceStarted) return;
+
+        // reset state (important if you ever restart / reload)
         raceStarted = true;
+        raceEnded = false;
+        firstFinishHappened = false;
+        firstFinisherSlot = -1;
 
         SetResult(0, "");
         SetResult(1, "");
@@ -48,7 +64,7 @@ public class RaceManager : MonoBehaviour
 
     public void PlayerCrossedFinish(RaceShip ship)
     {
-        if (!raceStarted) return;
+        if (!raceStarted || raceEnded) return;
         if (ship == null) return;
         if (ship.Finished) return;
 
@@ -104,6 +120,7 @@ public class RaceManager : MonoBehaviour
 
         FreezeAllShips();
         StopMusic();
+        raceEnded = true;
     }
 
     void FreezeAllShips()
@@ -117,6 +134,9 @@ public class RaceManager : MonoBehaviour
 
             var dash = ships[i].GetComponent<ShipDash>();
             if (dash != null) dash.enabled = false;
+
+            var boost = ships[i].GetComponent<HoldBoostSystem>();
+            if (boost != null) boost.enabled = false;
 
             var rb = ships[i].GetComponent<Rigidbody>();
             if (rb != null)

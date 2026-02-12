@@ -23,15 +23,17 @@ public class PlayerSpawn : MonoBehaviour
     [Header("Countdown")]
     [SerializeField] int requiredPlayers = 2;
     [SerializeField] int countdownSeconds = 5;
-    [SerializeField] float delayBeforeCountdown = 62f; // <- THIS is the delay you wanted
+
+    [Tooltip("Extra pause BEFORE the countdown starts (AFTER intro finishes).")]
+    [SerializeField] float extraDelayAfterIntro = 0.35f;
 
     [Header("Beep")]
     [SerializeField] AudioSource audioSource;
     [SerializeField] AudioClip beepClip;
 
-    [Header("Shared Announcer (intro only)")]
-    [SerializeField] AudioSource sharedAnnouncerSource; // scene AudioSource
-    [SerializeField] AudioClip sharedIntroClip;         // "going around saturn..." etc
+    [Header("Shared Announcer Intro (scene audio)")]
+    [SerializeField] AudioSource sharedAnnouncerSource; // scene AudioSource (2D voice)
+    [SerializeField] AudioClip sharedIntroClip;
 
     [Header("Race")]
     [SerializeField] RaceManager race;
@@ -44,22 +46,26 @@ public class PlayerSpawn : MonoBehaviour
     [SerializeField] bool clockwise;
     [SerializeField] bool preventBackwardProgress = true;
 
-    [Header("Throttle UI (reads input, NOT speed)")]
-    [SerializeField] string throttleFloatAction = "Throttle";
-    [SerializeField] string moveVectorAction = "Move";
+    [Header("Throttle UI (reads INPUT, not speed)")]
+    [SerializeField] string throttleFloatAction = "Throttle"; // float if you have it
+    [SerializeField] string moveVectorAction = "Move";        // fallback Vector2
     [SerializeField] bool invertThrottle = false;
+    [SerializeField] float throttleSmooth = 12f;              // higher = snappier
 
     public int PlayerCount { get; private set; }
 
     PlayerInput[] joined = new PlayerInput[2];
     bool countdownRunning;
     bool introPlayed;
+    Coroutine countdownCo;
+
+    float[] throttle01 = new float[2];
 
     void Start()
     {
         var allSpawners = FindObjectsByType<PlayerSpawn>(FindObjectsSortMode.None);
         if (allSpawners.Length > 1)
-            Debug.LogWarning($"WARNING: There are {allSpawners.Length} PlayerSpawn objects in the scene. That can cause weird stuff.");
+            Debug.LogWarning($"WARNING: There are {allSpawners.Length} PlayerSpawn objects in the scene.");
 
         if (race == null) race = FindFirstObjectByType<RaceManager>();
         if (racePositionUI == null) racePositionUI = FindFirstObjectByType<RacePositionUI>();
@@ -74,7 +80,7 @@ public class PlayerSpawn : MonoBehaviour
 
     void Update()
     {
-        // throttle sliders per player (each uses its own PlayerInput + ShipHUD slot)
+        // throttle sliders per player
         for (int slot = 0; slot < 2; slot++)
         {
             var pi = joined[slot];
@@ -83,10 +89,11 @@ public class PlayerSpawn : MonoBehaviour
             var hud = ShipHUD.Get(slot);
             if (hud == null || hud.throttleSlider == null) continue;
 
-            float v = ReadThrottle01(pi);
-            if (invertThrottle) v = 1f - v;
+            float target = ReadThrottle01(pi);
+            if (invertThrottle) target = 1f - target;
 
-            hud.throttleSlider.value = v;
+            throttle01[slot] = Mathf.Lerp(throttle01[slot], target, throttleSmooth * Time.deltaTime);
+            hud.throttleSlider.value = throttle01[slot];
         }
     }
 
@@ -97,7 +104,8 @@ public class PlayerSpawn : MonoBehaviour
         var a = pi.actions.FindAction(throttleFloatAction, false);
         if (a != null)
         {
-            float raw = a.ReadValue<float>(); // could be 0..1 or -1..1
+            float raw = a.ReadValue<float>();
+            if (raw >= 0f && raw <= 1.05f) return Mathf.Clamp01(raw);
             return Mathf.InverseLerp(-1f, 1f, raw);
         }
 
@@ -105,7 +113,8 @@ public class PlayerSpawn : MonoBehaviour
         if (mv != null)
         {
             Vector2 stick = mv.ReadValue<Vector2>();
-            return Mathf.InverseLerp(-1f, 1f, stick.y);
+            float y = stick.y;
+            return Mathf.InverseLerp(-1f, 1f, y);
         }
 
         return 0f;
@@ -153,12 +162,16 @@ public class PlayerSpawn : MonoBehaviour
 
         int playerNumber = slot + 1;
 
-        // freeze movement until countdown ends (do it before force-spawn)
+        // freeze movement until countdown ends
         var flight = playerInput.GetComponent<ShipControllerFlight>();
         if (flight != null) flight.enabled = false;
 
         var dash = playerInput.GetComponent<ShipDash>();
         if (dash != null) dash.enabled = false;
+
+        // IMPORTANT: disable boost so it can't push ship during countdown
+        var boost = playerInput.GetComponent<HoldBoostSystem>();
+        if (boost != null) boost.enabled = false;
 
         // Force spawn HARD
         if (SpawnPoints[slot] != null)
@@ -194,43 +207,62 @@ public class PlayerSpawn : MonoBehaviour
         tracker.Configure(slot, saturnCenter, ringPlane, startLineRef, clockwise, preventBackwardProgress);
 
         if (racePositionUI != null)
+        {
             racePositionUI.AssignTracker(slot, tracker);
 
-        // Wire per-player announcer (spawned at runtime so inspector refs won't magically work)
-        var ann = playerInput.GetComponentInChildren<PlayerAnnouncer>(true);
-        if (racePositionUI != null && ann != null)
-            racePositionUI.AssignAnnouncer(slot, ann);
+            var ann = playerInput.GetComponentInChildren<PlayerAnnouncer>(true);
+            if (ann != null) racePositionUI.AssignAnnouncer(slot, ann);
+        }
 
-        // Boost slot (so it writes to the right HUD)
-        var boost = playerInput.GetComponent<HoldBoostSystem>();
+        // Boost slot so it updates the correct HUD
         if (boost != null) boost.SetSlot(slot);
+
+        // Bind per-player announcer to HUD (for talking animation)
+        var hud = ShipHUD.Get(slot);
+        if (hud != null)
+        {
+            var ann = playerInput.GetComponentInChildren<PlayerAnnouncer>(true);
+          
+        }
 
         UpdateJoinUI();
 
-        if (!countdownRunning && PlayerCount >= requiredPlayers)
-            StartCoroutine(CountdownThenGo());
+        if (PlayerCount >= requiredPlayers && !countdownRunning)
+        {
+            if (countdownCo != null) StopCoroutine(countdownCo);
+            countdownCo = StartCoroutine(CountdownThenGo());
+        }
     }
 
     IEnumerator CountdownThenGo()
     {
         countdownRunning = true;
         SetCountdownActive(true);
-
-        // show "THE RACE STARTS IN" immediately, countdown numbers are below
-        UpdateJoinUI();
         SetCountdownText("");
+        UpdateJoinUI();
 
-        // play shared intro ONCE when countdown begins
+        // --- play intro and WAIT for it to finish ---
         if (!introPlayed && sharedAnnouncerSource != null && sharedIntroClip != null)
         {
             introPlayed = true;
+
+            // animate BOTH HUD announcers during shared intro
+            ShipHUD.Get(0)?.SetAnnouncerTalking(true);
+            ShipHUD.Get(1)?.SetAnnouncerTalking(true);
+
             sharedAnnouncerSource.PlayOneShot(sharedIntroClip);
+
+            yield return new WaitWhile(() => sharedAnnouncerSource != null && sharedAnnouncerSource.isPlaying);
+
+            ShipHUD.Get(0)?.SetAnnouncerTalking(false);
+            ShipHUD.Get(1)?.SetAnnouncerTalking(false);
         }
 
-        // ✅ actual delay before countdown numbers start
-        if (delayBeforeCountdown > 0f)
-            yield return new WaitForSeconds(delayBeforeCountdown);
+        // extra breathing room
+        if (extraDelayAfterIntro > 0f)
+            yield return new WaitForSeconds(extraDelayAfterIntro);
 
+        // --- countdown ---
         for (int t = countdownSeconds; t >= 1; t--)
         {
             SetCountdownText(t.ToString());
@@ -253,6 +285,10 @@ public class PlayerSpawn : MonoBehaviour
 
             var dash = joined[i].GetComponent<ShipDash>();
             if (dash != null) dash.enabled = true;
+
+            // enable boost NOW (so no pushing during countdown)
+            var boost = joined[i].GetComponent<HoldBoostSystem>();
+            if (boost != null) boost.enabled = true;
         }
 
         if (race != null) race.StartRace();
@@ -263,6 +299,7 @@ public class PlayerSpawn : MonoBehaviour
         SetCountdownActive(false);
         countdownRunning = false;
         UpdateJoinUI();
+        countdownCo = null;
     }
 
     void UpdateJoinUI()
@@ -368,8 +405,6 @@ public class PlayerSpawn : MonoBehaviour
 
         Physics.SyncTransforms();
     }
-
-    // --- helpers ---
 
     int GetNextFreeSlot()
     {
