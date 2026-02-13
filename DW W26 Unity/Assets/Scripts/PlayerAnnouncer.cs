@@ -1,22 +1,27 @@
 ﻿using System;
+using System.Collections;
 using UnityEngine;
 
 public class PlayerAnnouncer : MonoBehaviour
 {
+    public event Action<bool> OnTalkingChanged;
+
     [Header("Audio")]
     [SerializeField] AudioSource src;
 
-    [Header("Asteroid hit lines (rotate per-player)")]
+    [Header("Wrong way lines")]
+    [SerializeField] AudioClip[] wrongWayLines;
+    [SerializeField] float wrongWayCooldown = 2.5f;
+
+    [Header("Asteroid hit lines")]
     [SerializeField] AudioClip[] asteroidHitLines;
     [SerializeField] float hitCooldown = 0.8f;
 
-    public event Action<bool> OnTalkingChanged;
-
-    int hitIndex = 0;
-    float nextHitTime = 0f;
-
-    float talkUntil;
-    bool talking;
+    int wrongIndex;
+    int hitIndex;
+    float nextWrongTime;
+    float nextHitTime;
+    Coroutine talkCo;
 
     void Awake()
     {
@@ -24,21 +29,26 @@ public class PlayerAnnouncer : MonoBehaviour
         if (!src) src = gameObject.AddComponent<AudioSource>();
 
         src.playOnAwake = false;
-        src.spatialBlend = 0f;
-        SetTalking(false);
-    }
-
-    void Update()
-    {
-        if (talking && Time.unscaledTime >= talkUntil)
-            SetTalking(false);
+        src.spatialBlend = 0f; // 2D voice
     }
 
     public void Play(AudioClip clip)
     {
         if (!clip || src == null) return;
         src.PlayOneShot(clip);
-        BumpTalkingTimer(clip.length);
+        KickTalkingFor(clip.length);
+    }
+
+    public void PlayWrongWayLine()
+    {
+        if (Time.time < nextWrongTime) return;
+        nextWrongTime = Time.time + wrongWayCooldown;
+
+        if (wrongWayLines == null || wrongWayLines.Length == 0) return;
+        var clip = wrongWayLines[wrongIndex % wrongWayLines.Length];
+        wrongIndex++;
+
+        if (clip) Play(clip);
     }
 
     public void PlayAsteroidHitLine()
@@ -47,26 +57,23 @@ public class PlayerAnnouncer : MonoBehaviour
         nextHitTime = Time.time + hitCooldown;
 
         if (asteroidHitLines == null || asteroidHitLines.Length == 0) return;
-
         var clip = asteroidHitLines[hitIndex % asteroidHitLines.Length];
         hitIndex++;
 
-        if (!clip || src == null) return;
-
-        src.PlayOneShot(clip);
-        BumpTalkingTimer(clip.length);
+        if (clip) Play(clip);
     }
 
-    void BumpTalkingTimer(float clipLen)
+    void KickTalkingFor(float seconds)
     {
-        talkUntil = Mathf.Max(talkUntil, Time.unscaledTime + Mathf.Max(0.05f, clipLen));
-        SetTalking(true);
+        if (talkCo != null) StopCoroutine(talkCo);
+        talkCo = StartCoroutine(TalkRoutine(seconds));
     }
 
-    void SetTalking(bool value)
+    IEnumerator TalkRoutine(float seconds)
     {
-        if (talking == value) return;
-        talking = value;
-        OnTalkingChanged?.Invoke(talking);
+        OnTalkingChanged?.Invoke(true);
+        yield return new WaitForSeconds(seconds);
+        OnTalkingChanged?.Invoke(false);
+        talkCo = null;
     }
 }
