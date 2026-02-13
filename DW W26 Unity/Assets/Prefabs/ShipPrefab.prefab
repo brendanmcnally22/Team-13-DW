@@ -15,7 +15,6 @@ GameObject:
   - component: {fileID: 2708562649026150741}
   - component: {fileID: 1499590251449030136}
   - component: {fileID: 4662495879733800091}
-  - component: {fileID: 7214294916636882648}
   - component: {fileID: 7673756998749247803}
   - component: {fileID: -7436064741378305808}
   - component: {fileID: 1112752000208251694}
@@ -24,6 +23,7 @@ GameObject:
   - component: {fileID: 1993390793880722582}
   - component: {fileID: 8733588813786070722}
   - component: {fileID: 8659287768641840461}
+  - component: {fileID: 1598642454256321015}
   m_Layer: 3
   m_Name: ShipPrefab
   m_TagString: Player
@@ -305,18 +305,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1ee8dc709de4db43aec217072b6dacc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &7214294916636882648
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 221812434454255184}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4d0ac31cb40c9dd4bb5448c3d2dc4bef, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &7673756998749247803
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -451,7 +439,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 221812434454255184}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 11ad3866c9c5e764ab85fd63f18b1cf8, type: 3}
   m_Name: 
@@ -463,6 +451,26 @@ MonoBehaviour:
   radius: 12
   accel: 18
   voiceCooldown: 2
+--- !u!114 &1598642454256321015
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 221812434454255184}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6bab0f339e301674da9e7af239329589, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  trails: []
+  normalStart: {r: 1, g: 1, b: 1, a: 1}
+  normalEnd: {r: 1, g: 1, b: 1, a: 0}
+  boostStart: {r: 0, g: 1, b: 1, a: 1}
+  boostEnd: {r: 0, g: 1, b: 1, a: 0}
+  changeWidth: 0
+  normalWidth: 0.15
+  boostWidth: 0.25
 --- !u!1 &1560288468040184506
 GameObject:
   m_ObjectHideFlags: 0

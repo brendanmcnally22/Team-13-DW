@@ -607,6 +607,17 @@
                 },
                 {
                     "name": "",
+                    "id": "4a97e3ce-1dfe-4112-b05b-72192f2d0658",
+                    "path": "<Gamepad>/buttonSouth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "Boost",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "808bcadf-3a78-4286-bbbe-a2d5d8e28a23",
                     "path": "<DualShockGamepad>/buttonWest",
                     "interactions": "",
