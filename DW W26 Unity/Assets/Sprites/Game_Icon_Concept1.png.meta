@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 61172e5315d281e4c82051be679094a6
+guid: 3694769da28c9874d87b7e749c164377
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -4795267468301706775
-    second: ps5controls_0
+      213: 8772370118367167693
+    second: Game_Icon_Concept1_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -46,7 +46,7 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 2
+  spriteMode: 1
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
@@ -100,23 +100,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: ps5controls_0
+      name: Game_Icon_Concept1_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1920
-        height: 1080
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+        x: 72
+        y: 93
+        width: 148
+        height: 98
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 9e9d3ecd4a9c37db0800000000000000
-      internalID: -4795267468301706775
+      spriteID: dc4c6870528bdb970800000000000000
+      internalID: 8772370118367167693
       vertices: []
       indices: 
       edges: []
@@ -125,7 +125,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 04df33ae7b74a4848a00daa3f9d2a38d
+    spriteID: 5e97eb03825dee720800000000000000
     internalID: 0
     vertices: []
     indices: 
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      ps5controls_0: -4795267468301706775
+      Game_Icon_Concept1_0: 8772370118367167693
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
