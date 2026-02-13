@@ -13,6 +13,9 @@ public class HoldBoostSystem : MonoBehaviour
     [SerializeField] float drainPerSecond = 1.0f;
     [SerializeField] float regenPerSecond = 0.5f;
 
+    [Header("Race Gate")]
+    [SerializeField] bool requireRaceActive = true;
+
     [Header("Lockout")]
     [SerializeField] bool lockUntilFullAfterEmpty = true;
 
@@ -22,7 +25,8 @@ public class HoldBoostSystem : MonoBehaviour
     [Range(0f, 1f)][SerializeField] float highFreq = 0.5f;
 
     [Header("Debug")]
-    [SerializeField] bool debugLogs = true;
+    [SerializeField] bool debugLogs = false;
+    [SerializeField] float debugEverySeconds = 0.35f;
 
     Rigidbody rb;
     InputAction boostAction;
@@ -31,15 +35,19 @@ public class HoldBoostSystem : MonoBehaviour
     bool emptyLock;
     bool wasBoosting;
 
+    float nextDebugTime;
+
     int slot = -1;
     public void SetSlot(int s) => slot = s;
 
     BoostLightsIntensity boostLights;
     BoostTrailColor trailColor;
+    BoostSFX boostSfx;
+
+    Gamepad cachedPad;
 
     void Awake()
     {
-        // ✅ Fix #1: find PlayerInput even if this script is on a child
         if (!playerInput)
             playerInput = GetComponent<PlayerInput>()
                       ?? GetComponentInParent<PlayerInput>()
@@ -50,10 +58,10 @@ public class HoldBoostSystem : MonoBehaviour
 
         boostLights = GetComponentInChildren<BoostLightsIntensity>(true);
         trailColor = GetComponentInChildren<BoostTrailColor>(true);
+        boostSfx = GetComponentInChildren<BoostSFX>(true);
 
-        fuel = maxFuel;
+        fuel = Mathf.Max(0f, maxFuel);
 
-        // If slot not set from PlayerSpawn, try tracker
         if (slot < 0)
         {
             var tracker = GetComponentInParent<CircularProgressTracker>();
@@ -61,21 +69,44 @@ public class HoldBoostSystem : MonoBehaviour
             if (tracker != null) slot = tracker.Slot;
         }
 
+        CachePad();
+
         if (debugLogs)
-        {
             Debug.Log($"{name}: HoldBoost Awake | PI={(playerInput ? playerInput.name : "NULL")} | rb={(rb ? rb.name : "NULL")} | maxFuel={maxFuel}", this);
-        }
     }
 
     void OnEnable()
     {
         RefreshAction();
+        CachePad();
+        SetVisualsAndAudio(false);
+        StopRumble();
+        wasBoosting = false;
     }
 
     void OnDisable()
     {
+        SetVisualsAndAudio(false);
         StopRumble();
         wasBoosting = false;
+    }
+
+    void CachePad()
+    {
+        cachedPad = null;
+
+        if (playerInput == null) return;
+
+        // ✅ devices is a ReadOnlyArray -> never null; just check Count
+        var devices = playerInput.devices;
+        for (int i = 0; i < devices.Count; i++)
+        {
+            if (devices[i] is Gamepad gp)
+            {
+                cachedPad = gp;
+                break;
+            }
+        }
     }
 
     void RefreshAction()
@@ -88,12 +119,17 @@ public class HoldBoostSystem : MonoBehaviour
             return;
         }
 
-        boostAction = playerInput.actions.FindAction(boostActionName, false);
+        // prefer current map first
+        if (playerInput.currentActionMap != null)
+            boostAction = playerInput.currentActionMap.FindAction(boostActionName, false);
+
+        if (boostAction == null)
+            boostAction = playerInput.actions.FindAction(boostActionName, false);
 
         if (boostAction == null)
         {
             if (debugLogs)
-                Debug.LogWarning($"{name}: Boost action '{boostActionName}' NOT FOUND on {playerInput.actions.name}. Check action name + action map.", this);
+                Debug.LogWarning($"{name}: Boost action '{boostActionName}' NOT FOUND. Check action name + map.", this);
             return;
         }
 
@@ -107,16 +143,16 @@ public class HoldBoostSystem : MonoBehaviour
     void FixedUpdate()
     {
         if (rb == null) return;
-
         if (boostAction == null) RefreshAction();
 
-        bool raceAllowsBoost = (RaceManager.Instance == null) || RaceManager.Instance.RaceActive;
+        bool raceAllowsBoost = true;
+        if (requireRaceActive && RaceManager.Instance != null)
+            raceAllowsBoost = RaceManager.Instance.RaceActive;
 
         bool held = false;
         if (raceAllowsBoost && boostAction != null)
             held = boostAction.IsPressed();
 
-        // Lockout logic
         if (lockUntilFullAfterEmpty)
         {
             if (!emptyLock && fuel <= 0f) emptyLock = true;
@@ -124,7 +160,7 @@ public class HoldBoostSystem : MonoBehaviour
         }
         else emptyLock = false;
 
-        bool canBoost = held && fuel > 0f && !emptyLock;
+        bool canBoost = raceAllowsBoost && held && fuel > 0f && !emptyLock;
 
         if (canBoost)
         {
@@ -138,10 +174,9 @@ public class HoldBoostSystem : MonoBehaviour
 
         fuel = Mathf.Clamp(fuel, 0f, maxFuel);
 
-        // Slot resolution
         int useSlot = slot;
         if (useSlot < 0 || useSlot > 1)
-            useSlot = playerInput != null ? playerInput.playerIndex : 0;
+            useSlot = (playerInput != null) ? playerInput.playerIndex : 0;
 
         float norm = (maxFuel <= 0f) ? 0f : fuel / maxFuel;
 
@@ -152,11 +187,8 @@ public class HoldBoostSystem : MonoBehaviour
             hud.SetBoostActive(canBoost);
         }
 
-        // visuals
-        boostLights?.SetBoosting(canBoost);
-        trailColor?.SetBoosting(canBoost);
+        SetVisualsAndAudio(canBoost);
 
-        // rumble
         if (rumbleEnabled)
         {
             if (canBoost && !wasBoosting) StartRumble();
@@ -164,35 +196,30 @@ public class HoldBoostSystem : MonoBehaviour
         }
         wasBoosting = canBoost;
 
-        // 🔎 Debug only when player is holding boost (so console doesn’t spam)
-        if (debugLogs && held)
+        if (debugLogs && Time.time >= nextDebugTime)
         {
+            nextDebugTime = Time.time + Mathf.Max(0.05f, debugEverySeconds);
             Debug.Log($"{name}: held={held} canBoost={canBoost} fuel={fuel:F2}/{maxFuel:F2} emptyLock={emptyLock} slot={useSlot}", this);
         }
     }
 
+    void SetVisualsAndAudio(bool boosting)
+    {
+        boostLights?.SetBoosting(boosting);
+        trailColor?.SetBoosting(boosting);
+        boostSfx?.SetBoosting(boosting);
+    }
+
     void StartRumble()
     {
-        var pad = GetPlayerGamepad();
-        if (pad == null) return;
-        pad.SetMotorSpeeds(lowFreq, highFreq);
+        if (cachedPad == null) CachePad();
+        if (cachedPad == null) return;
+        cachedPad.SetMotorSpeeds(lowFreq, highFreq);
     }
 
     void StopRumble()
     {
-        var pad = GetPlayerGamepad();
-        if (pad == null) return;
-        pad.SetMotorSpeeds(0f, 0f);
-    }
-
-    Gamepad GetPlayerGamepad()
-    {
-        if (playerInput != null)
-        {
-            for (int i = 0; i < playerInput.devices.Count; i++)
-                if (playerInput.devices[i] is Gamepad gp)
-                    return gp;
-        }
-        return Gamepad.current;
+        if (cachedPad == null) return;
+        cachedPad.SetMotorSpeeds(0f, 0f);
     }
 }

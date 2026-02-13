@@ -24,6 +24,8 @@ GameObject:
   - component: {fileID: 8733588813786070722}
   - component: {fileID: 8659287768641840461}
   - component: {fileID: 1598642454256321015}
+  - component: {fileID: 6379841996729187663}
+  - component: {fileID: 8414020954908691465}
   m_Layer: 3
   m_Name: ShipPrefab
   m_TagString: Player
@@ -368,13 +370,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerInput: {fileID: 1347986384396866640}
   boostActionName: Boost
-  boostAccel: 350
+  boostAccel: 2300
   maxFuel: 3
   drainPerSecond: 1
   regenPerSecond: 0.5
+  requireRaceActive: 1
   lockUntilFullAfterEmpty: 1
-  logIfMissingAction: 1
-  fuel: 0
+  rumbleEnabled: 1
+  lowFreq: 0.495
+  highFreq: 0.727
+  debugLogs: 1
+  debugEverySeconds: 0.35
 --- !u!114 &-1168781103945595240
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -439,7 +445,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 221812434454255184}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 11ad3866c9c5e764ab85fd63f18b1cf8, type: 3}
   m_Name: 
@@ -447,9 +453,9 @@ MonoBehaviour:
   rb: {fileID: 582730780738512401}
   asteroidMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 64
   radius: 12
-  accel: 18
+  accel: 40
   voiceCooldown: 2
 --- !u!114 &1598642454256321015
 MonoBehaviour:
@@ -458,7 +464,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 221812434454255184}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6bab0f339e301674da9e7af239329589, type: 3}
   m_Name: 
@@ -471,6 +477,44 @@ MonoBehaviour:
   changeWidth: 0
   normalWidth: 0.15
   boostWidth: 0.25
+--- !u!114 &6379841996729187663
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 221812434454255184}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e93b6d4a3354f8f439c6f114296b4667, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  uiGraphics: []
+  uiNormalMul: 0.35
+  uiBoostMul: 1
+  worldLights:
+  - {fileID: 3793667445936242474}
+  - {fileID: 7737448577969448694}
+  lightNormalIntensity: 0.5
+  lightBoostIntensity: 2
+  lerpSpeed: 12
+--- !u!114 &8414020954908691465
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 221812434454255184}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a21565810b09434088d504e4ed06141, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  src: {fileID: 2135788509287598302}
+  loopClip: {fileID: 8300000, guid: aea6ca0fdd8521a44affb4f395b42eb4, type: 3}
+  targetVolume: 1
+  fadeSpeed: 12
+  spatial3D: 1
 --- !u!1 &1560288468040184506
 GameObject:
   m_ObjectHideFlags: 0
@@ -637,7 +681,7 @@ Transform:
   m_GameObject: {fileID: 3280910528527848811}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.9012124, z: -0, w: -0.43337762}
-  m_LocalPosition: {x: 6.08, y: 2.358, z: -0.77}
+  m_LocalPosition: {x: 2.56, y: 2.358, z: -0.89}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -653,9 +697,9 @@ Light:
   m_Enabled: 1
   serializedVersion: 11
   m_Type: 2
-  m_Color: {r: 0.019607853, g: 0.031804204, b: 0.81960785, a: 1}
-  m_Intensity: 1.5
-  m_Range: 10
+  m_Color: {r: 0.81960785, g: 0.81027824, b: 0.019607853, a: 1}
+  m_Intensity: 5
+  m_Range: 5
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
   m_CookieSize: 10
@@ -1259,13 +1303,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6683133284384641255}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 0.9012124, z: -0, w: -0.43337762}
-  m_LocalPosition: {x: -6.64, y: 2.358, z: -0.56}
+  m_LocalRotation: {x: -0, y: 0.99405897, z: -0, w: -0.10884306}
+  m_LocalPosition: {x: -2.967, y: 2.045, z: -0.989}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5483271153515820064}
-  m_LocalEulerAnglesHint: {x: 0, y: 231.364, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 192.497, z: 0}
 --- !u!108 &3793667445936242474
 Light:
   m_ObjectHideFlags: 0
@@ -1276,9 +1320,9 @@ Light:
   m_Enabled: 1
   serializedVersion: 11
   m_Type: 2
-  m_Color: {r: 0.019607853, g: 0.031804204, b: 0.81960785, a: 1}
-  m_Intensity: 1.5
-  m_Range: 10
+  m_Color: {r: 0.81960785, g: 0.8124635, b: 0.019607853, a: 1}
+  m_Intensity: 5
+  m_Range: 5
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
   m_CookieSize: 10
