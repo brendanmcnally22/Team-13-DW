@@ -5,6 +5,7 @@ public class MenuControls : MonoBehaviour
 {
     public float selection;
     bool ControlTutorialUp = false;
+    bool StoryUp = false;
     bool buttonDown;
     [Space(10)]
     [Header("Start")]
@@ -21,8 +22,10 @@ public class MenuControls : MonoBehaviour
     [Space(10)]
     [Header("Controls Screen")]
     public GameObject ControlTutorial1;
-    public GameObject ControlTutorial2;
     public GameObject ControlsMainMenu;
+    [Space(10)]
+    [Header("Story Screen")]
+    public GameObject StoryMenu;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -34,10 +37,10 @@ public class MenuControls : MonoBehaviour
     void Update()
     {
         // Don't show controller tutorial and allow player to move
-        if (ControlTutorialUp == false)
+        if (ControlTutorialUp == false && StoryUp == false)
         {
             ControlTutorial1.SetActive(false);
-            ControlTutorial2.SetActive(false);
+            StoryMenu.SetActive(false);
             ControlsMainMenu.SetActive(true);
             float verticalInput = Input.GetAxis("Vertical");
             if (verticalInput == 0)
@@ -74,10 +77,14 @@ public class MenuControls : MonoBehaviour
             }
         }
         // Show Controller Tutorial and don't allow main menu movement
-        else
+        if (ControlTutorialUp == true)
         {
             ControlTutorial1.SetActive(true);
-            ControlTutorial2.SetActive(true);
+            ControlsMainMenu.SetActive(false);
+        }
+        if (StoryUp == true)
+        {
+            StoryMenu.SetActive(true);
             ControlsMainMenu.SetActive(false);
         }
         // Start is Selected
@@ -119,6 +126,10 @@ public class MenuControls : MonoBehaviour
             ControlsSelected.SetActive(false);
             QuitSprite.SetActive(false);
             QuitSelected.SetActive(true);
+            if (Input.GetButtonDown("Fire1"))
+            {
+                StoryUp = !StoryUp;
+            }
         }
     }
 }

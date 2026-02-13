@@ -1,10 +1,16 @@
 fileFormatVersion: 2
-guid: 61172e5315d281e4c82051be679094a6
+guid: acbdfd12bfe1f374ebfee441455c2e3b
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -4795267468301706775
-    second: ps5controls_0
+      213: 8805802901004606596
+    second: GameIcon_Complete_DesignWeek2026_0
+  - first:
+      213: 8600741357991421685
+    second: GameIcon_Complete_DesignWeek2026_1
+  - first:
+      213: -4883323393666827196
+    second: GameIcon_Complete_DesignWeek2026_2
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -101,7 +107,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 0
+    textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -113,49 +119,67 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: X
+      name: GameIcon_Complete_DesignWeek2026_0
       rect:
         serializedVersion: 2
-        x: 760
-        y: 827
-        width: 109
-        height: 100
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline:
-      - - {x: 960, y: 540}
-        - {x: -960, y: 540}
-        - {x: -960, y: -540}
-        - {x: 960, y: -540}
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 9e9d3ecd4a9c37db0800000000000000
-      internalID: -4795267468301706775
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: UpandDown
-      rect:
-        serializedVersion: 2
-        x: 757
-        y: 347
-        width: 105
-        height: 154
+        x: 68
+        y: 93
+        width: 162
+        height: 112
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: e04da5d5b0210504c821b3ad2ec8ff24
-      internalID: -1504962061
+      spriteID: 48cdb74551f743a70800000000000000
+      internalID: 8805802901004606596
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GameIcon_Complete_DesignWeek2026_1
+      rect:
+        serializedVersion: 2
+        x: 134
+        y: 80
+        width: 27
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5f6e61842b8fb5770800000000000000
+      internalID: 8600741357991421685
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GameIcon_Complete_DesignWeek2026_2
+      rect:
+        serializedVersion: 2
+        x: 153
+        y: 92
+        width: 19
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 44c32251f33fa3cb0800000000000000
+      internalID: -4883323393666827196
       vertices: []
       indices: 
       edges: []
@@ -164,7 +188,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 04df33ae7b74a4848a00daa3f9d2a38d
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -174,8 +198,9 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      UpandDown: -1504962061
-      X: -4795267468301706775
+      GameIcon_Complete_DesignWeek2026_0: 8805802901004606596
+      GameIcon_Complete_DesignWeek2026_1: 8600741357991421685
+      GameIcon_Complete_DesignWeek2026_2: -4883323393666827196
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
