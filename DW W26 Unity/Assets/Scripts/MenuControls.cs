@@ -30,7 +30,6 @@ public class MenuControls : MonoBehaviour
     void Start()
     {
         selection = 1;
-        
     }
 
     // Update is called once per frame
