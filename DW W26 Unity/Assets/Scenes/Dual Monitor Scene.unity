@@ -2824,17 +2824,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8733588813786070722, guid: 706240f55e141014f92ae30d30603aef, type: 3}
-      propertyPath: trailsDrag
-      value: 5
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 221812434454255184, guid: 706240f55e141014f92ae30d30603aef, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1556827184}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 706240f55e141014f92ae30d30603aef, type: 3}
 --- !u!1 &741323630
 GameObject:
@@ -3072,11 +3065,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 782964479}
   m_CullTransparentMesh: 1
---- !u!1 &819561732 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 221812434454255184, guid: 706240f55e141014f92ae30d30603aef, type: 3}
-  m_PrefabInstance: {fileID: 727187357}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &846199641
 GameObject:
   m_ObjectHideFlags: 0
@@ -3195,6 +3183,57 @@ MonoBehaviour:
   - {fileID: 3815272097668552594, guid: 51cd000a8784ae549b13ada5fedd1b03, type: 3}
   - {fileID: 7071020848720279480, guid: 51cd000a8784ae549b13ada5fedd1b03, type: 3}
   stepped: 1
+--- !u!1 &875122016
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 875122017}
+  - component: {fileID: 875122018}
+  m_Layer: 0
+  m_Name: AudioManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &875122017
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 875122016}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1279904241}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &875122018
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 875122016}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed3021aca3337e64bb47f4885dbfddb6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  src: {fileID: 1426336785}
+  wrongWayLines:
+  - {fileID: 8300000, guid: edaa2bdebc490ec4db314889b5f84898, type: 3}
+  wrongWayCooldown: 2.5
+  asteroidHitLines:
+  - {fileID: 8300000, guid: 9a1056b68d536c54d8f16281ac2b71d4, type: 3}
+  hitCooldown: 0.8
 --- !u!1 &877407066
 GameObject:
   m_ObjectHideFlags: 0
@@ -3573,8 +3612,8 @@ MonoBehaviour:
   placeText: {fileID: 619322977}
   boostMeter: {fileID: 0}
   boostFlame: {fileID: 846199645}
+  boostLightsRoot: {fileID: 0}
   announcerTalking: {fileID: 0}
-  announcerBob: {fileID: 0}
   wrongWayRoot: {fileID: 1313384549}
   restartPopupRoot: {fileID: 1313384549}
   restartPopupText: {fileID: 1313384551}
@@ -4494,6 +4533,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1543384611}
+  - {fileID: 875122017}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1310169108
@@ -5809,30 +5849,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: -20}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!54 &1556827183 stripped
-Rigidbody:
-  m_CorrespondingSourceObject: {fileID: 582730780738512401, guid: 706240f55e141014f92ae30d30603aef, type: 3}
-  m_PrefabInstance: {fileID: 727187357}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1556827184
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 819561732}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 11ad3866c9c5e764ab85fd63f18b1cf8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  rb: {fileID: 1556827183}
-  asteroidMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  radius: 12
-  accel: 18
-  voiceCooldown: 2
 --- !u!1 &1563554397
 GameObject:
   m_ObjectHideFlags: 0
@@ -6981,8 +6997,8 @@ MonoBehaviour:
   placeText: {fileID: 0}
   boostMeter: {fileID: 846199646}
   boostFlame: {fileID: 846199645}
+  boostLightsRoot: {fileID: 0}
   announcerTalking: {fileID: 0}
-  announcerBob: {fileID: 0}
   wrongWayRoot: {fileID: 377129}
   restartPopupRoot: {fileID: 377129}
   restartPopupText: {fileID: 377131}

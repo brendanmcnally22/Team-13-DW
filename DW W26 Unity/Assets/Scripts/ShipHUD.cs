@@ -15,9 +15,11 @@ public class ShipHUD : MonoBehaviour
     public BoostMeterSprites boostMeter; // value-based sprite swap
     public UISpriteFlipbook boostFlame;  // time-based flame anim (optional)
 
+    [Header("Boost Lights (optional)")]
+    public GameObject boostLightsRoot;   // parent of green lights, toggled only while boosting
+
     [Header("Announcer UI")]
     public UISpriteFlipbook announcerTalking; // optional mouth anim
-    public UIAnnouncerBob announcerBob;       // optional bobbing
 
     [Header("Wrong Way UI")]
     public GameObject wrongWayRoot; // set active when wrong way (Text/Image/etc)
@@ -34,7 +36,6 @@ public class ShipHUD : MonoBehaviour
     {
         slot = Mathf.Clamp(slot, 0, 1);
 
-        // warn if you accidentally set both canvases to same slot
         if (huds[slot] != null && huds[slot] != this)
             Debug.LogWarning($"ShipHUD slot {slot} already assigned. Check both canvases have different slot values (0 and 1).", this);
 
@@ -72,6 +73,9 @@ public class ShipHUD : MonoBehaviour
             if (active) boostFlame.Play();
             else boostFlame.Stop();
         }
+
+        if (boostLightsRoot != null)
+            boostLightsRoot.SetActive(active);
     }
 
     // ---- Announcer ----
@@ -98,9 +102,6 @@ public class ShipHUD : MonoBehaviour
             if (talking) announcerTalking.Play();
             else announcerTalking.Stop();
         }
-
-        if (announcerBob != null)
-            announcerBob.SetActive(talking);
     }
 
     // ---- Wrong way ----
