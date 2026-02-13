@@ -3326,13 +3326,13 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Every 20 years, life from across the galaxy for the space olympics. A
-    competitive event created after the 2457 interstellar war.Instead of fighting
+  m_text: "Every 20 years, life from across the galaxy gather for the space olympics.
+    A competitive event created after the 2457 interstellar war. Instead of fighting
     for freedom and territory, species now compete through high speed races around
-    Saturn\u2019s ring. And they are racing for the official prize, a golden cup
-    symbolizing peace and dominance. But most of all\nis its true reward, a secret
-    reward that is far more valuable than the golden cup, a rare resource known only
-    as \u201Cmoon cheese\u201D And only one racer can take it home.\n"
+    Saturn\u2019s ring. They are racing for the official prize, a golden cup symbolizing
+    peace and dominance. But most of all is its true reward, a secret reward that
+    is far more valuable than the golden cup, a rare resource known only as \u201Cmoon
+    cheese\u201D Only one racer can take it home.\n"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 934e340a3cc85b94ab510a7cca9f2181, type: 2}
   m_sharedMaterial: {fileID: 7080155631383302950, guid: 934e340a3cc85b94ab510a7cca9f2181, type: 2}
